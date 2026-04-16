@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>草稿箱 - 灵序之夏后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f5; }
+        .header { background: #28a745; color: #fff; padding: 20px 40px; }
+        .header h1 { font-size: 20px; }
+        .header a { color: #fff; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .btn { padding: 8px 16px; background: #667eea; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; }
+        .btn-success { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { color: #666; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>草稿箱</h1>
+        <nav>
+            <a href="/admin/">仪表盘</a>
+            <a href="/admin/posts">文章管理</a>
+            <a href="/admin/drafts">草稿箱</a>
+        </nav>
+    </div>
+    <div class="container">
+        <div class="card">
+            <p>共 {{.total}} 篇草稿</p>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>标题</th><th>专栏</th><th>操作</th></tr>
+                </thead>
+                <tbody>
+                    {{range .posts}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Title}}</td>
+                        <td>{{.ColumnID}}</td>
+                        <td>
+                            <a href="/admin/posts/{{.ID}}" class="btn">编辑</a>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

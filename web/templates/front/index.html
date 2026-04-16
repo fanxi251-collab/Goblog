@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <style>
+        :root {
+            --blog-white: #ffffff;
+            --blog-black: #222222;
+            --blog-red: #ff385c;
+            --blog-gray: #6a6a6a;
+            --blog-light-bg: #f2f2f2;
+            --blog-card-shadow: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08);
+            --blog-radius-card: 20px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--blog-white);
+            color: var(--blog-black);
+            line-height: 1.6;
+        }
+        
+        /* 导航栏 */
+        .header {
+            background: rgba(255,255,255,0.96);
+            border-bottom: 1px solid #f0f0f0;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .nav a {
+            color: var(--blog-black);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover {
+            color: var(--blog-red);
+        }
+        
+        .blog-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--blog-black);
+        }
+        
+        /* 主内容区 */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        /* 分类导航 */
+        .category-pills {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .category-pill {
+            padding: 8px 18px;
+            background: var(--blog-light-bg);
+            border-radius: 40px;
+            text-decoration: none;
+            color: var(--blog-black);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .category-pill:hover {
+            background: var(--blog-red);
+            color: var(--blog-white);
+        }
+        
+        .category-pill.active {
+            background: var(--blog-red);
+            color: var(--blog-white);
+        }
+        
+        /* 文章网格 */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        
+        .post-card {
+            background: var(--blog-white);
+            border-radius: var(--blog-radius-card);
+            overflow: hidden;
+            box-shadow: var(--blog-card-shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .post-card .cover {
+            height: 180px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        }
+        
+        .post-card .cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .post-card .content {
+            padding: 16px;
+        }
+        
+        .post-card .title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--blog-black);
+            text-decoration: none;
+            display: block;
+            line-height: 1.4;
+        }
+        
+        .post-card .title:hover {
+            color: var(--blog-red);
+        }
+        
+        .post-card .meta {
+            font-size: 13px;
+            color: var(--blog-gray);
+        }
+        
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+        
+        .pagination a, .pagination span {
+            padding: 10px 16px;
+            background: var(--blog-white);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--blog-black);
+            font-size: 14px;
+            box-shadow: var(--blog-card-shadow);
+        }
+        
+        .pagination a:hover {
+            background: var(--blog-red);
+            color: var(--blog-white);
+        }
+        
+        .pagination .current {
+            background: var(--blog-red);
+            color: var(--blog-white);
+        }
+        
+        /* 空状态 */
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--blog-gray);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="/">首页</a>
+                <a href="/column">专栏</a>
+                <a href="/message">留言板</a>
+                <a href="/about">关于</a>
+            </nav>
+            <h1 class="blog-title">灵序之夏</h1>
+        </div>
+    </div>
+    
+    <!-- 主内容 -->
+    <div class="container">
+        <!-- 分类筛选 -->
+        <div class="category-pills">
+            <a href="/" class="category-pill {{if not .search}}active{{end}}">全部</a>
+            {{range .columns}}
+            <a href="/column/{{.Slug}}" class="category-pill">{{.Name}}</a>
+            {{end}}
+        </div>
+        
+        <!-- 文章网格 -->
+        {{if .posts}}
+        <div class="posts-grid">
+            {{range .posts}}
+            <a href="/post/{{.Slug}}" class="post-card">
+                <div class="cover">
+                    {{if .CoverImage}}
+                    <img src="/static/uploads/{{.CoverImage}}" alt="{{.Title}}">
+                    {{end}}
+                </div>
+                <div class="content">
+                    <div class="title">{{.Title}}</div>
+                    <div class="meta">{{.UpdatedAt}} · {{.ViewCount}} 阅读</div>
+                </div>
+            </a>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="empty">
+            <p>暂无文章</p>
+        </div>
+        {{end}}
+        
+        <!-- 分页 -->
+        {{if gt .totalPages 1}}
+        <div class="pagination">
+            {{if gt .page 1}}
+            <a href="/?page={{.page}}">上一页</a>
+            {{end}}
+            <span class="current">{{.page}} / {{.totalPages}}</span>
+            {{if lt .page .totalPages}}
+            <a href="/?page={{.page}}">下一页</a>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}} - 奇迹之夏后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg,667eea 0%,#764ba2 100%); color: #fff; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 20px; }
+        .header a { color: #fff; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+        .form-group textarea { min-height: 400px; font-family: monospace; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+        .btn { padding: 12px 24px; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background: #007bff; }
+        .btn-success { background: #28a745; }
+        .btn-secondary { background: #6c757d; }
+        .btn-group { display: flex; gap: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>编辑文章</h1>
+        <nav>
+            <a href="/admin/">仪表盘</a>
+            <a href="/admin/posts">文章列表</a>
+        </nav>
+    </div>
+    <div class="container">
+        <div class="card">
+            <form id="postForm">
+                <input type="hidden" name="id" value="{{.post.ID}}">
+                <input type="hidden" name="slug" value="">
+                <div class="form-group">
+                    <label>标题</label>
+                    <input type="text" name="title" value="{{.post.Title}}" required>
+                </div>
+                <div class="form-group">
+                    <label>专栏</label>
+                    <select name="column_id">
+                        <option value="0" {{if eq .post.ColumnID 0}}selected{{end}}>首页文章</option>
+                        {{range .columns}}
+                        <option value="{{.ID}}" {{if eq .ID $.post.ColumnID}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>封面图</label>
+                    <input type="file" id="coverInput" accept="image/*">
+                    <input type="hidden" name="cover_image" id="coverImage" value="{{.post.CoverImage}}">
+                    <div id="coverPreview" style="margin-top: 10px;">
+                        {{if .post.CoverImage}}
+                        <img src="/static/uploads/{{.post.CoverImage}}" style="max-width: 200px; border-radius: 8px;">
+                        {{end}}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>内容（Markdown）</label>
+                    <textarea name="content">{{.post.Content}}</textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" name="action" value="publish" class="btn btn-primary">直接发布</button>
+                    <button type="submit" name="action" value="draft" class="btn btn-success">保存草稿</button>
+                    <a href="/admin/posts" class="btn btn-secondary">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('coverInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const res = await fetch('/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('coverImage').value = data.path;
+                    document.getElementById('coverPreview').innerHTML = 
+                        '<img src="' + data.url + '" style="max-width: 200px; border-radius: 8px;">';
+                } else {
+                    alert('上传失败: ' + data.error);
+                }
+            } catch(err) {
+                alert('上传失败');
+            }
+        });
+    </script>
+</body>
+</html>

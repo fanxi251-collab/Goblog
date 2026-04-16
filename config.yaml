@@ -1,0 +1,24 @@
+# 服务器配置
+server:
+  host: "0.0.0.0"
+  port: 8080
+
+# 后台配置
+admin:
+  path: "/admin"                # 后台路径（可自定义）
+  username: "admin"           # 初始用户名
+  password: "admin123"       # 初始密码（生产环境请修改）
+
+# 数据库配置
+database:
+  type: "sqlite"
+  path: "data/goblog.db"
+
+# 文件上传配置
+upload:
+  path: "web/static/uploads"
+  max_size: 10                # MB
+
+# XSS清洗配置
+xss:
+  enabled: true
