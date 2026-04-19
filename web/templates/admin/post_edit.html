@@ -7,22 +7,55 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f5f5f5; }
-        .header { background: linear-gradient(135deg,667eea 0%,#764ba2 100%); color: #fff; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .header {
+            background: #87CEEB;
+            color: #fff;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .header h1 { font-size: 20px; }
         .header a { color: #fff; text-decoration: none; margin-left: 20px; }
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
         .card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
-        .form-group textarea { min-height: 400px; font-family: monospace; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
-        .btn { padding: 12px 24px; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        
+        .btn { padding: 12px 24px; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn:hover { opacity: 0.9; }
         .btn-primary { background: #007bff; }
         .btn-success { background: #28a745; }
         .btn-secondary { background: #6c757d; }
         .btn-group { display: flex; gap: 12px; }
+        
+        #message { display:none; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        
+        /* 工具栏样式 */
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 10px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+        }
+        .editor-toolbar button {
+            padding: 6px 12px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .editor-toolbar button:hover { background: #667eea; color: #fff; }
+        .editor-toolbar .separator { width: 1px; background: #ddd; margin: 0 5px; }
     </style>
 </head>
 <body>
@@ -30,7 +63,9 @@
         <h1>编辑文章</h1>
         <nav>
             <a href="/admin/">仪表盘</a>
-            <a href="/admin/posts">文章列表</a>
+            <a href="/admin/posts">文章管理</a>
+            <a href="/admin/drafts">草稿箱</a>
+            <a href="/admin/posts/new">写文章</a>
         </nav>
     </div>
     <div class="container">
@@ -52,52 +87,98 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>封面图</label>
-                    <input type="file" id="coverInput" accept="image/*">
-                    <input type="hidden" name="cover_image" id="coverImage" value="{{.post.CoverImage}}">
-                    <div id="coverPreview" style="margin-top: 10px;">
-                        {{if .post.CoverImage}}
-                        <img src="/static/uploads/{{.post.CoverImage}}" style="max-width: 200px; border-radius: 8px;">
-                        {{end}}
-                    </div>
-                </div>
-                <div class="form-group">
                     <label>内容（Markdown）</label>
-                    <textarea name="content">{{.post.Content}}</textarea>
+                    <!-- 自定义工具栏 -->
+                    <div class="editor-toolbar">
+                        <button type="button" onclick="insertFormat('# ', '')">H1</button>
+                        <button type="button" onclick="insertFormat('## ', '')">H2</button>
+                        <button type="button" onclick="insertFormat('### ', '')">H3</button>
+                        <span class="separator"></span>
+                        <button type="button" onclick="insertFormat('**', '**)">粗体</button>
+                        <button type="button" onclick="insertFormat('*', '*)">斜体</button>
+                        <button type="button" onclick="insertFormat('~~', '~~')">删除线</button>
+                        <span class="separator"></span>
+                        <button type="button" onclick="insertFormat('- ', '')">无序列表</button>
+                        <button type="button" onclick="insertFormat('1. ', '')">有序列表</button>
+                        <span class="separator"></span>
+                        <button type="button" onclick="insertFormat('`', '`')">行内代码</button>
+                        <button type="button" onclick="insertFormat('\n```\n', '\n```\n')">代码块</button>
+                        <button type="button" onclick="insertFormat('\n> ', '')">引用</button>
+                        <button type="button" onclick="insertFormat('[', '](url)')">链接</button>
+                        <button type="button" onclick="insertFormat('![', '](图片地址)')">图片</button>
+                    </div>
+                    <textarea name="content" id="content" style="width: 100%; min-height: 400px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; font-family: monospace; font-size: 14px; line-height: 1.6;">{{.post.Content}}</textarea>
                 </div>
+                <div id="message"></div>
                 <div class="btn-group">
-                    <button type="submit" name="action" value="publish" class="btn btn-primary">直接发布</button>
-                    <button type="submit" name="action" value="draft" class="btn btn-success">保存草稿</button>
+                    <button type="button" onclick="submitPost('publish')" class="btn btn-primary">直接发布</button>
+                    <button type="button" onclick="submitPost('draft')" class="btn btn-success">保存草稿</button>
                     <a href="/admin/posts" class="btn btn-secondary">取消</a>
                 </div>
             </form>
         </div>
     </div>
+
     <script>
-        document.getElementById('coverInput').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        function insertFormat(prefix, suffix) {
+            const textarea = document.getElementById('content');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end);
             
-            const formData = new FormData();
-            formData.append('file', file);
+            const before = text.substring(0, start);
+            const after = text.substring(end);
             
-            try {
-                const res = await fetch('/admin/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
+            textarea.value = before + prefix + selected + suffix + after;
+            textarea.focus();
+            
+            const newPos = start + prefix.length + selected.length + suffix.length;
+            textarea.setSelectionRange(newPos, newPos);
+        }
+
+        function submitPost(action) {
+            const form = document.getElementById('postForm');
+            const formData = new FormData(form);
+            formData.append('action', action);
+            
+            const messageEl = document.getElementById('message');
+            messageEl.style.display = 'none';
+            
+            fetch('/admin/posts/save', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
                 if (data.success) {
-                    document.getElementById('coverImage').value = data.path;
-                    document.getElementById('coverPreview').innerHTML = 
-                        '<img src="' + data.url + '" style="max-width: 200px; border-radius: 8px;">';
+                    messageEl.style.display = 'block';
+                    if (action === 'publish') {
+                        messageEl.style.background = '#d4edda';
+                        messageEl.style.color = '#155724';
+                        messageEl.textContent = '发布成功！';
+                    } else {
+                        messageEl.style.background = '#fff3cd';
+                        messageEl.style.color = '#856404';
+                        messageEl.textContent = '保存成功！';
+                    }
+                    setTimeout(() => {
+                        window.location.href = action === 'publish' ? '/admin/posts' : '/admin/drafts';
+                    }, 1500);
                 } else {
-                    alert('上传失败: ' + data.error);
+                    messageEl.style.display = 'block';
+                    messageEl.style.background = '#f8d7da';
+                    messageEl.style.color = '#721c24';
+                    messageEl.textContent = '错误: ' + (data.error || '保存失败');
                 }
-            } catch(err) {
-                alert('上传失败');
-            }
-        });
+            })
+            .catch(err => {
+                messageEl.style.display = 'block';
+                messageEl.style.background = '#f8d7da';
+                messageEl.style.color = '#721c24';
+                messageEl.textContent = '请求失败';
+            });
+        }
     </script>
 </body>
 </html>

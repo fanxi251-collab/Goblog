@@ -31,9 +31,15 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 
+	// 返回 Vditor 需要的格式：markdown 格式的图片链接
+	imageURL := "![](/static/uploads/" + path + ")"
+
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"path":    path,
-		"url":     "/static/uploads/" + path,
+		"success": 1,
+		"message": "上传成功",
+		"data": gin.H{
+			"url":  imageURL,
+			"path": path,
+		},
 	})
 }

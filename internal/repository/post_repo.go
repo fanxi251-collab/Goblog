@@ -162,3 +162,28 @@ func (r *PostRepository) IncrViewCount(id uint) error {
 	return r.db.Model(&model.Post{}).Where("id = ?", id).
 		UpdateColumn("view_count", gorm.Expr("view_count + ?", 1)).Error
 }
+
+// GetStats 获取统计数据（文章总数、点赞总数、评论总数）
+func (r *PostRepository) GetStats() (int64, int64, int64, error) {
+	var posts []model.Post
+	var total int64
+
+	// 获取文章总数
+	if err := r.db.Model(&model.Post{}).Count(&total).Error; err != nil {
+		return 0, 0, 0, err
+	}
+
+	// 获取所有文章（统计用）
+	if err := r.db.Find(&posts).Error; err != nil {
+		return total, 0, 0, err
+	}
+
+	// 统计点赞和评论
+	var totalLikes, totalComments int64
+	for _, post := range posts {
+		totalLikes += int64(post.LikeCount)
+		totalComments += int64(post.CommentCount)
+	}
+
+	return total, totalLikes, totalComments, nil
+}

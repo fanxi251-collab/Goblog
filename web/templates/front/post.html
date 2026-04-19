@@ -5,21 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.title}}</title>
     <style>
+        :root {
+            --blog-white: #ffffff;
+            --blog-black: #222222;
+            --blog-red: #ff385c;
+            --blog-gray: #6a6a6a;
+            --blog-light-bg: #f2f2f2;
+            --blog-card-shadow: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08);
+            --blog-radius-card: 20px;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f8f9fa; color: #333; line-height: 1.8; }
-        .header { background: linear-gradient(135deg,667eea 0%,#764ba2 100%); padding: 20px 0; position: sticky; top: 0; z-index: 100; }
-        .header .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #fff; }
-        .nav a { color: #fff; text-decoration: none; margin-left: 30px; }
-        
-        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        .article { background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        
-        .article-header { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; }
+
+        /* 视频背景 */
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            color: #333; line-height: 1.8;
+        }
+
+        /* 导航栏 (与 index.html 一致) */
+        .header {
+            background: transparent;
+            backdrop-filter: none;
+            border-bottom: none;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .container {
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav {
+            display: flex;
+            gap: 50px;
+        }
+
+        .nav a {
+            color: var(--blog-black);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav a:hover {
+            color: #0070f3;
+        }
+
+        .blog-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--blog-black);
+        }
+
+        /* 页面布局：三栏 */
+        .page-wrapper {
+            max-width: 100%;                /* 占满全宽 */
+            margin: 40px auto;
+            padding: 0 50px;                /* 与 index.html 的左右内边距一致 */
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 40px;
+        }
+
+        /* 左侧目录 */
+        .toc-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+        }
+
+        .toc.sticky {
+            position: sticky;
+            top: 100px;
+        }
+
+        .toc-box {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .toc-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 8px;
+        }
+
+        .toc-list a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            padding: 4px 0;
+            transition: color 0.2s;
+        }
+
+        .toc-list a:hover {
+            color: #667eea;
+        }
+
+        .toc-list .toc-h2 {
+            padding-left: 15px;
+        }
+
+        .toc-list .toc-h3 {
+            padding-left: 30px;
+            font-size: 13px;
+        }
+
+        /* 中间文章 */
+        .article-main {
+            flex: 5;                        /* 让正文区域占据剩余空间，与 index.html 的 .main-content 比例类似 */
+            min-width: 0;
+        }
+
+        .article {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .article-header { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.1); }
         .article-title { font-size: 32px; margin-bottom: 15px; color: #333; }
-        .article-meta { color: #999; font-size: 14px; }
+        .article-meta { color: #666; font-size: 14px; }
         .article-meta a { color: #667eea; text-decoration: none; }
-        
+
         .article-content { font-size: 16px; line-height: 1.8; }
         .article-content h1, .article-content h2, .article-content h3 { margin: 30px 0 15px; color: #333; }
         .article-content h1 { font-size: 28px; }
@@ -34,52 +180,200 @@
         .article-content li { margin-bottom: 10px; }
         .article-content a { color: #667eea; }
         .article-content img { max-width: 100%; border-radius: 8px; margin: 20px 0; }
-        
-        .pagination { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 30px; border-top: 1px solid #f0f0f0; }
+
+        .pagination { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(0,0,0,0.1); }
         .pagination a { color: #667eea; text-decoration: none; }
         .pagination a:hover { text-decoration: underline; }
-        
-        .related { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 30px; }
-        .related h3 { margin-bottom: 20px; }
-        .related ul { list-style: none; padding: 0; }
-        .related li { margin-bottom: 10px; }
-        .related a { color: #333; text-decoration: none; }
-        .related a:hover { color: #667eea; }
+
+        /* 右侧侧边栏 (与 index.html 一致) */
+        .sidebar {
+            flex: 3;                        /* 与 index.html 一致 */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;          /* 内部卡片靠右 */
+        }
+
+        .about-card {
+            width: 350px;
+            margin-right: 50px;             /* 关键：右边距，使卡片左移 */
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(240,255,240,0.3) 100%);
+            border-radius: var(--blog-radius-card);
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .about-card .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+        .about-card .email {
+            font-size: 14px;
+            color: #000000;
+            font-weight: 500;
+            margin-bottom: 12px;
+            word-break: break-all;
+        }
+
+        .about-card .motto {
+            font-size: 14px;
+            color: #111111;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-num {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <a href="/" class="logo">灵序之夏</a>
-            <nav class="nav">
-                <a href="/">首页</a>
-                <a href="/column">专栏</a>
-                <a href="/message">留言板</a>
-                <a href="/about">关于</a>
-            </nav>
-        </div>
-    </div>
+<!-- 视频背景 -->
+<video class="video-bg" autoplay muted loop playsinline>
+    <source src="/static/videos/bg.mp4" type="video/mp4">
+</video>
 
+<!-- 导航栏 -->
+<div class="header">
     <div class="container">
-        <article class="article">
+        <nav class="nav">
+            <a href="/">首页</a>
+            <a href="/column">专栏</a>
+            <a href="/message">留言板</a>
+            <a href="/about">关于</a>
+        </nav>
+        <h1 class="blog-title">灵序之夏</h1>
+    </div>
+</div>
+
+<div class="page-wrapper">
+    <!-- 左侧目录 -->
+    <aside class="toc-sidebar" id="toc">
+        <div class="toc sticky">
+            <div class="toc-box">
+                <div class="toc-title">文章目录</div>
+                <ul class="toc-list" id="tocList"></ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 中间文章 -->
+    <article class="article-main">
+        <div class="article">
             <header class="article-header">
                 <h1 class="article-title">{{.post.Title}}</h1>
                 <div class="article-meta">
-                    <a href="/column/{{.column.Slug}}">{{.column.Name}}</a> · 
-                    <span>{{.post.ViewCount}} 阅读</span> · 
+                    <a href="/column/{{.column.Slug}}">{{.column.Name}}</a> ·
+                    <span>{{.post.ViewCount}} 阅读</span> ·
                     <span>{{.post.UpdatedAt}}</span>
                 </div>
             </header>
-            
-            <div class="article-content">
-                {{.post.Content}}
+
+            <div class="article-content" id="articleContent">
+                {{safe .post.Content}}
             </div>
-            
+
             <div class="pagination">
                 <span></span>
-                <a href="/column/{{.column.Slug}}">返回 {{.column.Name}}</a>
+                <a href="/">返回首页</a>
             </div>
-        </article>
-    </div>
+        </div>
+    </article>
+
+    <!-- 右侧侧边栏（与 index.html 一致） -->
+    <aside class="sidebar">
+        <!-- 关于我卡片 -->
+        <div class="about-card">
+            <div class="icon">🌱</div>
+            <div class="email">746834335@qq.com</div>
+            <div class="motto">愿寻若木发新蕊，祈望少年携春归</div>
+        </div>
+
+        <!-- 关于本站卡片 -->
+        <div class="about-card">
+            <div class="icon">🌈</div>
+            <div class="email">灵序之夏</div>
+            <div class="motto">知识分享，技术交流，生活琐碎</div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-num">{{.postsTotal}}</div>
+                    <div class="stat-label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">{{.likesTotal}}</div>
+                    <div class="stat-label">点赞</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">{{.commentsTotal}}</div>
+                    <div class="stat-label">评论</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+    // 生成文章目录
+    function generateTOC() {
+        const content = document.getElementById('articleContent');
+        const toc = document.getElementById('toc');
+        const tocList = document.getElementById('tocList');
+
+        const headings = content.querySelectorAll('h1, h2, h3');
+        
+        // 即使没有标题，也始终显示目录区域
+        if (headings.length === 0) {
+            tocList.innerHTML = '<li style="color: #999; font-size: 14px;">暂无目录</li>';
+            return;
+        }
+
+        headings.forEach(function(heading, index) {
+            const id = 'heading-' + index;
+            heading.id = id;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#' + id;
+            a.textContent = heading.textContent;
+            a.className = 'toc-' + heading.tagName.toLowerCase();
+
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            });
+
+            li.appendChild(a);
+            tocList.appendChild(li);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', generateTOC);
+</script>
 </body>
 </html>

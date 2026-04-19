@@ -17,6 +17,17 @@
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
+        /* 视频背景 */
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: var(--blog-white);
@@ -26,8 +37,9 @@
         
         /* 导航栏 */
         .header {
-            background: rgba(255,255,255,0.96);
-            border-bottom: 1px solid #f0f0f0;
+            background: transparent;
+            backdrop-filter: none;
+            border-bottom: none;;
             padding: 16px 0;
             position: sticky;
             top: 0;
@@ -35,7 +47,7 @@
         }
         
         .header .container {
-            max-width: 1200px;
+            max-width: 90%;
             margin: 0 auto;
             padding: 0 20px;
             display: flex;
@@ -45,7 +57,7 @@
         
         .nav {
             display: flex;
-            gap: 24px;
+            gap: 50px;
         }
         
         .nav a {
@@ -57,7 +69,7 @@
         }
         
         .nav a:hover {
-            color: var(--blog-red);
+            color: #0070f3;
         }
         
         .blog-title {
@@ -68,70 +80,120 @@
         
         /* 主内容区 */
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        /* 分类导航 */
-        .category-pills {
+            padding: 0 50px;
+            position: relative;
+            z-index: 1;
             display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
+            gap: 40px;
         }
         
-        .category-pill {
-            padding: 8px 18px;
-            background: var(--blog-light-bg);
-            border-radius: 40px;
-            text-decoration: none;
-            color: var(--blog-black);
+        /* 左侧文章区域 */
+        .main-content {
+            width: 880px;           /* 固定宽度 */
+            flex: none;             /* 禁止伸缩 */
+            max-width: 100%;
+        }
+        
+        /* 右侧侧边栏 */
+        .sidebar {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;   /* 内部卡片靠右 */
+        }
+        
+        /* 关于我卡片 */
+        .about-card {
+            width: 350px;
+            margin-right: 50px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(240,255,240,0.3) 100%);
+            border-radius: var(--blog-radius-card);
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            height: 240px;               /* 固定高度，与文章卡片一致 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;     /* 垂直居中 */
+            overflow: hidden;            /* 防止内容溢出 */
+        }
+        
+        .about-card .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+        
+        .about-card .email {
             font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
+            color: #000000;          /* 纯黑色，最深 */
+            font-weight: 500;        /* 中等粗细，可选 */
+            margin-bottom: 12px;
+            word-break: break-all;
         }
         
-        .category-pill:hover {
-            background: var(--blog-red);
-            color: var(--blog-white);
+.about-card .motto {
+            font-size: 14px;
+            color: var(--blog-black);
+            line-height: 1.6;
+            margin-bottom: 15px;
         }
         
-        .category-pill.active {
-            background: var(--blog-red);
-            color: var(--blog-white);
+        .about-card .stats-row {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
         }
         
-        /* 文章网格 */
+        .about-card .stat-item {
+            flex: 1;
+        }
+        
+        .about-card .stat-num {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--blog-black);
+        }
+        
+        .about-card .stat-label {
+            font-size: 12px;
+            color: var(--blog-gray);
+            margin-top: 4px;
+        }
+        
+/* 文章网格 */
         .posts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 24px;
         }
         
-        .post-card {
-            background: var(--blog-white);
+.post-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
             border-radius: var(--blog-radius-card);
             overflow: hidden;
-            box-shadow: var(--blog-card-shadow);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
             cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
         }
         
         .post-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-6px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
         }
         
-        .post-card .cover {
-            height: 180px;
-            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-        }
-        
-        .post-card .cover img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .post-card .card-icon {
+            font-size: 50px;
+            text-align: center;
+            margin-bottom: 10px;
         }
         
         .post-card .content {
@@ -148,13 +210,23 @@
             line-height: 1.4;
         }
         
+        .post-card .meta-row {
+            display: flex;
+            gap: 16px;                     /* 两个元素之间的间隔，可调小至 4px 或 8px */
+            font-size: 12px;
+            color: var(--blog-gray);
+            margin-top: 4px;
+        }
+        
         .post-card .title:hover {
             color: var(--blog-red);
         }
         
         .post-card .meta {
             font-size: 13px;
-            color: var(--blog-gray);
+            color: #3a3a3a;
+            text-decoration: none;
+            
         }
         
         /* 分页 */
@@ -194,6 +266,11 @@
     </style>
 </head>
 <body>
+    <!-- 视频背景 -->
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="/static/videos/bg.mp4" type="video/mp4">
+    </video>
+    
     <!-- 导航栏 -->
     <div class="header">
         <div class="container">
@@ -207,33 +284,30 @@
         </div>
     </div>
     
-    <!-- 主内容 -->
+    <!-- 主内容 (两栏布局) -->
     <div class="container">
-        <!-- 分类筛选 -->
-        <div class="category-pills">
-            <a href="/" class="category-pill {{if not .search}}active{{end}}">全部</a>
-            {{range .columns}}
-            <a href="/column/{{.Slug}}" class="category-pill">{{.Name}}</a>
-            {{end}}
-        </div>
-        
-        <!-- 文章网格 -->
-        {{if .posts}}
-        <div class="posts-grid">
-            {{range .posts}}
-            <a href="/post/{{.Slug}}" class="post-card">
-                <div class="cover">
-                    {{if .CoverImage}}
-                    <img src="/static/uploads/{{.CoverImage}}" alt="{{.Title}}">
-                    {{end}}
-                </div>
-                <div class="content">
-                    <div class="title">{{.Title}}</div>
-                    <div class="meta">{{.UpdatedAt}} · {{.ViewCount}} 阅读</div>
-                </div>
-            </a>
-            {{end}}
-        </div>
+        <!-- 左侧文章区域 -->
+        <div class="main-content">
+            <!-- 文章网格 -->
+            {{if .posts}}
+            <div class="posts-grid">
+                {{range .posts}}
+                <a href="/post/{{.Slug}}" class="post-card">
+                    <div class="card-icon">🌻</div>
+                    <div class="content">
+                        <div class="title">{{.Title}}</div>
+                        <div class="meta-row">
+                            <span>{{.FormatDate}}</span>
+                            <span>{{.ViewCount}} 阅读</span>
+                        </div>
+                        <div class="meta-row">
+                            <span>{{.LikeCount}} 点赞</span>
+                            <span>{{.CommentCount}} 评论</span>
+                        </div>
+                    </div>
+                </a>
+                {{end}}
+            </div>
         {{else}}
         <div class="empty">
             <p>暂无文章</p>
@@ -244,14 +318,44 @@
         {{if gt .totalPages 1}}
         <div class="pagination">
             {{if gt .page 1}}
-            <a href="/?page={{.page}}">上一页</a>
+            <a href="/?page={{sub .page 1}}">上一页</a>
             {{end}}
             <span class="current">{{.page}} / {{.totalPages}}</span>
             {{if lt .page .totalPages}}
-            <a href="/?page={{.page}}">下一页</a>
+            <a href="/?page={{add .page 1}}">下一页</a>
             {{end}}
         </div>
         {{end}}
+        </div>
+        
+        <!-- 右侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="about-card">
+                <div class="icon">🌱</div>
+                <div class="email">746834335@qq.com</div>
+                <div class="motto">愿寻若木发新蕊，祈望少年携春归</div>
+            </div>
+            
+            <div class="about-card" style="margin-top: 20px;">
+                <div class="icon">🌈</div>
+                <div class="email">灵序之夏</div>
+                <div class="motto">知识分享，技术交流，生活琐碎</div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-num">{{.postsTotal}}</div>
+                        <div class="stat-label">文章</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">{{.likesTotal}}</div>
+                        <div class="stat-label">点赞</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">{{.commentsTotal}}</div>
+                        <div class="stat-label">评论</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
 </body>
 </html>

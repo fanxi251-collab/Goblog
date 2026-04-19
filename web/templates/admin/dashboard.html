@@ -11,7 +11,7 @@
             background: #f5f5f5;
         }
         .header {
-            background: linear-gradient(135deg,667eea 0%,#764ba2 100%);
+            background: #87CEEB;
             color: #fff;
             padding: 20px 40px;
             display: flex;
@@ -76,15 +76,15 @@
         <div class="stats">
             <div class="stat-card">
                 <h3>文章总数</h3>
-                <div class="number">0</div>
+                <div class="number">{{.PostsTotal}}</div>
             </div>
             <div class="stat-card">
                 <h3>专栏数量</h3>
-                <div class="number">0</div>
+                <div class="number">{{.ColumnsTotal}}</div>
             </div>
             <div class="stat-card">
                 <h3>留言总数</h3>
-                <div class="number">0</div>
+                <div class="number">{{.CommentTotal}}</div>
             </div>
         </div>
         <div class="menu">

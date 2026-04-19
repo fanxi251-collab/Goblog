@@ -13,12 +13,13 @@ import (
 // SetupTemplateFunctions 设置模板函数
 func SetupTemplateFunctions(engine *gin.Engine) {
 	funcMap := template.FuncMap{
-		"add": func(a, b int) int { return a + b },
-		"sub": func(a, b int) int { return a - b },
-		"eq":  func(a, b interface{}) bool { return a == b },
-		"gt":  func(a, b int) bool { return a > b },
-		"lt":  func(a, b int) bool { return a < b },
-		"not": func(b bool) bool { return !b },
+		"add":  func(a, b int) int { return a + b },
+		"sub":  func(a, b int) int { return a - b },
+		"eq":   func(a, b interface{}) bool { return a == b },
+		"gt":   func(a, b int) bool { return a > b },
+		"lt":   func(a, b int) bool { return a < b },
+		"not":  func(b bool) bool { return !b },
+		"safe": func(str string) template.HTML { return template.HTML(str) },
 	}
 	engine.SetFuncMap(funcMap)
 }
@@ -46,11 +47,11 @@ func Setup(
 	frontColumnHandler := front.NewColumnHandler(postService, columnService)
 	messageHandler := front.NewMessageHandler(commentService)
 
+	// 设置模板函数（必须在加载模板之前）
+	SetupTemplateFunctions(engine)
+
 	// 设置HTML模板（后台+前台）
 	engine.LoadHTMLGlob("./web/templates/**/*.html")
-
-	// 设置模板函数
-	SetupTemplateFunctions(engine)
 
 	// ============ 前台路由 ============
 	engine.GET("/", homeHandler.Index)
@@ -75,10 +76,19 @@ func Setup(
 		// 使用认证中间件
 		adminPrivate.Use(authHandler.AuthRequired())
 
-		// 仪表盘
+		// 仪表盘（带统计数据）
 		adminPrivate.GET("/", func(c *gin.Context) {
+			_, postsTotal, _ := postService.GetAll(1, 1)
+			columns, _ := columnService.GetAll()
+			_, commentsTotal, _ := commentService.GetAll(1, 1)
+			println("DEBUG postsTotal:", postsTotal)
+			println("DEBUG columns:", columns)
+			println("DEBUG commentsTotal:", commentsTotal)
 			c.HTML(200, "dashboard.html", gin.H{
-				"title": "后台管理",
+				"title":        "后台管理",
+				"PostsTotal":   postsTotal,
+				"ColumnsTotal": len(columns),
+				"CommentTotal": commentsTotal,
 			})
 		})
 

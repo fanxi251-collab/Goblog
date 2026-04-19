@@ -55,14 +55,20 @@ func (h *HomeHandler) Index(c *gin.Context) {
 		totalPages++
 	}
 
+	// 获取统计数据
+	postsTotal, likesTotal, commentsTotal, _ := h.postService.GetStats()
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"title":      "灵序之夏",
-		"posts":      posts,
-		"columns":    columns,
-		"page":       page,
-		"totalPages": totalPages,
-		"total":      total,
-		"search":     search,
+		"title":         "灵序之夏",
+		"posts":         posts,
+		"columns":       columns,
+		"page":          page,
+		"totalPages":    totalPages,
+		"total":         total,
+		"search":        search,
+		"postsTotal":    postsTotal,
+		"likesTotal":    likesTotal,
+		"commentsTotal": commentsTotal,
 	})
 }
 

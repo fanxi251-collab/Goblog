@@ -1,6 +1,7 @@
 package front
 
 import (
+	"Goblog/internal/model"
 	"Goblog/internal/service"
 	"net/http"
 	"strconv"
@@ -54,7 +55,7 @@ func (h *ColumnHandler) List(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "column_detail.html", gin.H{
-		"title":      column.Name + " - 奇迹之夏",
+		"title":      column.Name + " - 灵序之夏",
 		"column":     column,
 		"posts":      posts,
 		"page":       page,
@@ -79,12 +80,25 @@ func (h *ColumnHandler) Post(c *gin.Context) {
 	content := service.RenderMarkdown(post.Content)
 	post.Content = content
 
-	// 获取专栏信息
-	column, _ := h.columnService.GetByID(post.ColumnID)
+	// 获取专栏信息（只有 ColumnID > 0 时才获取）
+	var column *model.Column
+	if post.ColumnID > 0 {
+		column, _ = h.columnService.GetByID(post.ColumnID)
+	}
+	// 如果 column 为 nil，创建一个空对象避免模板报错
+	if column == nil {
+		column = &model.Column{}
+	}
+
+	// 获取统计数据
+	postsTotal, likesTotal, commentsTotal, _ := h.postService.GetStats()
 
 	c.HTML(http.StatusOK, "post.html", gin.H{
-		"title":  post.Title + " - 奇迹之夏",
-		"post":   post,
-		"column": column,
+		"title":         post.Title + " - 灵序之夏",
+		"post":          post,
+		"column":        column,
+		"postsTotal":    postsTotal,
+		"likesTotal":    likesTotal,
+		"commentsTotal": commentsTotal,
 	})
 }

@@ -124,3 +124,8 @@ func (s *PostService) Unpublish(id uint) error {
 func (s *PostService) IncrViewCount(id uint) error {
 	return s.postRepo.IncrViewCount(id)
 }
+
+// GetStats 获取统计数据
+func (s *PostService) GetStats() (int64, int64, int64, error) {
+	return s.postRepo.GetStats()
+}
