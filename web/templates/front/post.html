@@ -11,7 +11,7 @@
             --blog-red: #ff385c;
             --blog-gray: #6a6a6a;
             --blog-light-bg: #f2f2f2;
-            --blog-card-shadow: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08);
+            --blog-card-shadow: 0px 0px 0px 1px rgba(0,0, 0, 0.02), 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 4px 8px rgba(0, 0, 0, 0.08);
             --blog-radius-card: 20px;
         }
 
@@ -19,13 +19,64 @@
 
         /* 视频背景 */
         .video-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
+            position: relative;
             width: 100%;
-            height: 100%;
+            height: 60vh;
             object-fit: cover;
-            z-index: -1;
+            object-position: center 40%;
+            display: block;
+        }
+
+        /* 视频背景上的标题容器 */
+        .video-title-overlay {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 80%;
+            max-width: 800px;
+        }
+
+        .video-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .video-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .video-meta-separator {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .video-excerpt {
+            margin-top: 16px;
+            color: rgba(255,255,255,0.85);
+            font-size: 15px;
+            line-height: 1.6;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         body {
@@ -33,16 +84,20 @@
             color: #333; line-height: 1.8;
         }
 
-        /* 导航栏 (与 index.html 一致) */
+        /* 导航栏 */
         .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
             background: transparent;
             backdrop-filter: none;
             border-bottom: none;
-            padding: 16px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 12px 0;
+            pointer-events: auto;
         }
+
 
         .header .container {
             max-width: 90%;
@@ -53,66 +108,59 @@
             align-items: center;
         }
 
-        .nav {
-            display: flex;
-            gap: 50px;
-        }
-
+        .nav { display: flex; gap: 50px; }
         .nav a {
-            color: var(--blog-black);
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             text-decoration: none;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 500;
             transition: color 0.3s;
         }
-
-        .nav a:hover {
-            color: #0070f3;
-        }
-
+        .nav a:hover { color: #0070f3; }
         .blog-title {
             font-size: 24px;
             font-weight: 700;
-            color: var(--blog-black);
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
-        /* 页面布局：三栏 */
+        /* 三栏布局 */
         .page-wrapper {
-            max-width: 100%;                /* 占满全宽 */
+            max-width: 1600px;
             margin: 40px auto;
-            padding: 0 50px;                /* 与 index.html 的左右内边距一致 */
+            padding: 0 40px;
             position: relative;
             z-index: 1;
-            display: flex;
-            gap: 40px;
+            display: grid;
+            grid-template-columns: 200px 1fr 200px;
+            gap: 30px;
         }
 
-        /* 左侧目录 */
-        .toc-sidebar {
-            width: 220px;
-            flex-shrink: 0;
-        }
-
-        .toc.sticky {
+        /* 左侧：文章目录 */
+        .post-toc {
             position: sticky;
             top: 100px;
+            height: fit-content;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
         }
 
         .toc-box {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(8px);
-            border-radius: 20px;
+            background: #fff;
+            border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #eef2f6;
+            border-top: 3px solid #667eea;
         }
 
         .toc-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 15px;
             color: #333;
+            margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid #eee;
         }
 
         .toc-list {
@@ -128,34 +176,175 @@
         .toc-list a {
             color: #666;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
             display: block;
             padding: 4px 0;
             transition: color 0.2s;
+            line-height: 1.4;
         }
 
         .toc-list a:hover {
             color: #667eea;
         }
 
-        .toc-list .toc-h2 {
-            padding-left: 15px;
+        .toc-h2 {
+            padding-left: 12px;
         }
 
-        .toc-list .toc-h3 {
-            padding-left: 30px;
-            font-size: 13px;
+        .toc-h3 {
+            padding-left: 24px;
+            font-size: 12px;
         }
 
-        /* 中间文章 */
-        .article-main {
-            flex: 5;                        /* 让正文区域占据剩余空间，与 index.html 的 .main-content 比例类似 */
+        /* 中间：文章内容 */
+        .main-content {
             min-width: 0;
         }
 
         .article {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        /* 右侧：专栏文章列表 */
+        .right-sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .column-posts-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e5e5e5;
+            border-top: 3px solid #667eea;
+        }
+
+        .column-posts-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .column-post-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .column-post-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .column-post-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .column-post-item a {
+            color: #333;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            line-height: 1.4;
+            transition: color 0.2s;
+        }
+
+        .column-post-item a:hover {
+            color: #667eea;
+        }
+
+        .column-post-item.current a {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .column-post-date {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .empty-toc {
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .column-list-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #222;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .column-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .column-item {
+            display: block;
+            padding: 12px 16px;
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(8px);
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .column-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(5px);
+        }
+
+        .column-item.active {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .column-item .column-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .column-item .column-desc {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .column-item.active .column-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 中间：文章内容 */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .article {
+            background: #ffffff;
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -173,91 +362,193 @@
         .article-content h3 { font-size: 20px; }
         .article-content p { margin-bottom: 20px; }
         .article-content code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-        .article-content pre { background: #f5f5f5; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
+        .article-content pre { background: #f5f5f5; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; position: relative; }
         .article-content pre code { background: none; padding: 0; }
+        
+        /* 代码块复制按钮 */
+        .code-copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 10px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, background 0.2s;
+        }
+        .article-content pre:hover .code-copy-btn { opacity: 1; }
+        .code-copy-btn:hover { background: #d0d0d0; }
+        .code-copy-btn.copied { background: #4caf50; color: #fff; }
         .article-content blockquote { border-left: 4px solid #667eea; margin: 20px 0; padding: 10px 20px; background: #f8f9fa; }
         .article-content ul, .article-content ol { margin: 20px 0; padding-left: 30px; }
         .article-content li { margin-bottom: 10px; }
         .article-content a { color: #667eea; }
         .article-content img { max-width: 100%; border-radius: 8px; margin: 20px 0; }
-
-        .pagination { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(0,0,0,0.1); }
-        .pagination a { color: #667eea; text-decoration: none; }
-        .pagination a:hover { text-decoration: underline; }
-
-        /* 右侧侧边栏 (与 index.html 一致) */
-        .sidebar {
-            flex: 3;                        /* 与 index.html 一致 */
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;          /* 内部卡片靠右 */
+        
+        /* 点赞按钮 */
+        .like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
         }
-
-        .about-card {
-            width: 350px;
-            margin-right: 50px;             /* 关键：右边距，使卡片左移 */
-            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(240,255,240,0.3) 100%);
-            border-radius: var(--blog-radius-card);
-            padding: 20px 16px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            height: 240px;
+        .like-btn:hover { background: #e0e0e0; }
+        .like-btn.liked { background: #ff6b6b; color: #fff; }
+        .like-btn.liked:hover { background: #ff5252; }
+        
+        /* 文章底部操作栏 */
+        .article-actions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.1);
             display: flex;
-            flex-direction: column;
             justify-content: center;
-            overflow: hidden;
+            gap: 20px;
+        }
+
+        /* 评论区域 */
+        .comments-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(0,0,0,0.1);
+        }
+        .comments-section h2 {
+            font-size: 20px;
             margin-bottom: 20px;
+            color: #333;
         }
-
-        .about-card .icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-            line-height: 1;
+        .comment-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
         }
-
-        .about-card .email {
+        .comment-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             font-size: 14px;
-            color: #000000;
-            font-weight: 500;
-            margin-bottom: 12px;
-            word-break: break-all;
+            resize: vertical;
         }
-
-        .about-card .motto {
-            font-size: 14px;
-            color: #111111;
-            font-weight: 500;
-            line-height: 1.6;
+        .comment-form .btn {
+            margin-top: 10px;
+            padding: 10px 24px;
+            background: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
         }
-
-        .stats-row {
+        .comment-list { margin-top: 20px; }
+        .comment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-header {
             display: flex;
             justify-content: space-between;
-            margin-top: 16px;
+            margin-bottom: 8px;
         }
-
-        .stat-item {
-            flex: 1;
-        }
-
-        .stat-num {
-            font-size: 18px;
-            font-weight: 600;
-            color: #000;
-        }
-
-        .stat-label {
-            font-size: 12px;
+        .comment-author { font-weight: bold; color: #667eea; }
+        .comment-date { color: #999; font-size: 12px; }
+        .comment-content { color: #333; line-height: 1.6; }
+        .comment-actions { margin-top: 8px; }
+        .comment-actions button { background: none; border: none; color: #667eea; cursor: pointer; font-size: 12px; padding: 0; }
+        .comment-actions button:hover { text-decoration: underline; }
+        .comment-reply { margin-left: 30px; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; }
+        .reply-form { margin-top: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; }
+        .reply-form.show { display: block; }
+        .reply-form textarea { min-height: 80px; width: 100%; }
+        .reply-form .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .comment-login-prompt {
+            text-align: center;
+            padding: 20px;
             color: #666;
-            margin-top: 4px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        /* 右侧：文章目录 */
+        .right-sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .toc-sticky {
+            position: sticky;
+            top: 100px;
+        }
+
+        .toc-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .toc-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .toc-list { list-style: none; padding: 0; margin: 0; }
+        .toc-list li { margin-bottom: 8px; }
+        .toc-list a { color: #666; text-decoration: none; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; }
+        .toc-list a:hover { color: #667eea; }
+        .toc-h2 { padding-left: 15px; }
+        .toc-h3 { padding-left: 30px; font-size: 13px; }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
         }
     </style>
 </head>
 <body>
 <!-- 视频背景 -->
 <video class="video-bg" autoplay muted loop playsinline>
-    <source src="/static/videos/bg.mp4" type="video/mp4">
+    <source src="/static/videos/post.mp4" type="video/mp4">
 </video>
+
+<!-- 视频背景上的标题 -->
+<div class="video-title-overlay">
+    <h1 class="video-title">{{.post.Title}}</h1>
+    <div class="video-meta">
+        <span class="video-meta-item">
+            {{if ne .post.UpdatedAt .post.CreatedAt}}发布时间：{{formatTime .post.CreatedAt}}{{else}}发布时间：{{formatTime .post.CreatedAt}}{{end}}
+        </span>
+        {{if ne .post.UpdatedAt .post.CreatedAt}}
+        <span class="video-meta-separator">|</span>
+        <span class="video-meta-item">更新时间：{{formatTime .post.UpdatedAt}}</span>
+        {{end}}
+        <span class="video-meta-separator">|</span>
+        <span class="video-meta-item">👍 {{.post.LikeCount}}</span>
+        <span class="video-meta-separator">|</span>
+        <span class="video-meta-item">💬 {{.post.CommentCount}}</span>
+    </div>
+    {{if .post.Excerpt}}
+    <div class="video-excerpt">{{.post.Excerpt}}</div>
+    {{end}}
+</div>
 
 <!-- 导航栏 -->
 <div class="header">
@@ -265,93 +556,171 @@
         <nav class="nav">
             <a href="/">首页</a>
             <a href="/column">专栏</a>
+            <a href="/devlog">开发日志</a>
             <a href="/message">留言板</a>
-            <a href="/about">关于</a>
         </nav>
         <h1 class="blog-title">灵序之夏</h1>
     </div>
 </div>
 
+<!-- 三栏布局 -->
 <div class="page-wrapper">
-    <!-- 左侧目录 -->
-    <aside class="toc-sidebar" id="toc">
-        <div class="toc sticky">
-            <div class="toc-box">
-                <div class="toc-title">文章目录</div>
-                <ul class="toc-list" id="tocList"></ul>
-            </div>
+    <!-- 左侧：文章目录 -->
+    <aside class="post-toc">
+        <div class="toc-box">
+            <div class="toc-title">文章目录</div>
+            <ul class="toc-list" id="tocList">
+                <li class="empty-toc">暂无目录</li>
+            </ul>
         </div>
     </aside>
 
-    <!-- 中间文章 -->
-    <article class="article-main">
+    <!-- 中间：文章内容 -->
+    <main class="main-content">
         <div class="article">
-            <header class="article-header">
-                <h1 class="article-title">{{.post.Title}}</h1>
-                <div class="article-meta">
-                    <a href="/column/{{.column.Slug}}">{{.column.Name}}</a> ·
-                    <span>{{.post.ViewCount}} 阅读</span> ·
-                    <span>{{.post.UpdatedAt}}</span>
-                </div>
-            </header>
-
             <div class="article-content" id="articleContent">
                 {{safe .post.Content}}
             </div>
 
-            <div class="pagination">
-                <span></span>
-                <a href="/">返回首页</a>
+            <!-- 点赞按钮 -->
+            <div class="article-actions">
+                <button class="like-btn" id="likeBtn" data-post-id="{{.post.ID}}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span id="likeCount">{{.post.LikeCount}}</span> 点赞
+                </button>
+            </div>
+
+            <!-- 评论区域 -->
+            <div class="comments-section">
+                <h2>评论 <span id="commentCount">({{.post.CommentCount}})</span></h2>
+
+                <!-- 评论列表 -->
+                <div class="comment-list" id="commentList">
+                    {{if .comments}}
+                        {{range .comments}}
+                        <div class="comment-item" id="comment-{{.ID}}">
+                            <div class="comment-header">
+                                <span class="comment-author">{{.Nickname}}</span>
+                                <span class="comment-date">{{formatTime .CreatedAt}}</span>
+                            </div>
+                            <div class="comment-content">{{.Content}}</div>
+                            <div class="comment-actions">
+                                <button onclick="showReplyForm({{.ID}})">回复</button>
+                            </div>
+                            
+                            <!-- 回复表单 -->
+                            <div id="reply-form-{{.ID}}" class="reply-form">
+                                <input type="hidden" name="parent_id" value="{{.ID}}">
+                                <div class="form-group">
+                                    <textarea id="reply-content-{{.ID}}" name="content" placeholder="写下你的回复..."></textarea>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm" onclick="submitReply({{.ID}})">提交回复</button>
+                                    <button type="button" class="btn btn-sm" style="background: #999;" onclick="hideReplyForm({{.ID}})">取消</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 显示回复 -->
+                            {{if .Replies}}
+                            <div class="replies">
+                                {{range .Replies}}
+                                <div class="comment-item comment-reply">
+                                    <div class="comment-header">
+                                        <span class="comment-author">{{.Nickname}}</span>
+                                        <span class="comment-date">{{formatTime .CreatedAt}}</span>
+                                    </div>
+                                    <div class="comment-content">{{.Content}}</div>
+                                </div>
+                                {{end}}
+                            </div>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    {{else}}
+                        <p style="color: #999; text-align: center; padding: 20px;">暂无评论，快来抢沙发吧！</p>
+                    {{end}}
+                </div>
+
+                <!-- 评论表单 -->
+                <div class="comment-form">
+                    <h3>发表评论</h3>
+                    <div id="commentLoginPrompt" class="comment-login-prompt" style="display: none;">
+                        <p>登录后即可发表评论</p>
+                        <button class="btn" onclick="showVisitorModal()">立即登录</button>
+                    </div>
+                    <div id="commentFormContent">
+                        <textarea id="commentContent" placeholder="写下你的评论..."></textarea>
+                        <button class="btn" onclick="submitComment()">提交评论</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </article>
+    </main>
 
-    <!-- 右侧侧边栏（与 index.html 一致） -->
-    <aside class="sidebar">
-        <!-- 关于我卡片 -->
-        <div class="about-card">
-            <div class="icon">🌱</div>
-            <div class="email">746834335@qq.com</div>
-            <div class="motto">愿寻若木发新蕊，祈望少年携春归</div>
-        </div>
-
-        <!-- 关于本站卡片 -->
-        <div class="about-card">
-            <div class="icon">🌈</div>
-            <div class="email">灵序之夏</div>
-            <div class="motto">知识分享，技术交流，生活琐碎</div>
-            <div class="stats-row">
-                <div class="stat-item">
-                    <div class="stat-num">{{.postsTotal}}</div>
-                    <div class="stat-label">文章</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">{{.likesTotal}}</div>
-                    <div class="stat-label">点赞</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">{{.commentsTotal}}</div>
-                    <div class="stat-label">评论</div>
-                </div>
-            </div>
+    <!-- 右侧：专栏文章列表 -->
+    <aside class="right-sidebar">
+        <div class="column-posts-box">
+            <div class="column-posts-title">{{.column.Name}}</div>
+            <ul class="column-post-list">
+                {{range .columnPosts}}
+                <li class="column-post-item {{if eq .ID $.post.ID}}current{{end}}">
+                    <a href="/post/{{.Slug}}">{{.Title}}</a>
+                    <div class="column-post-date">{{formatTime .CreatedAt}}</div>
+                </li>
+                {{end}}
+            </ul>
         </div>
     </aside>
 </div>
 
 <script>
+    // 初始化代码块复制按钮
+    function initCodeCopyButtons() {
+        var preBlocks = document.querySelectorAll('.article-content pre');
+        preBlocks.forEach(function(pre) {
+            // 避免重复添加
+            if (pre.querySelector('.code-copy-btn')) return;
+
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = '复制';
+            
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var code = pre.querySelector('code');
+                var text = code ? code.textContent : pre.textContent;
+                
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = '已复制';
+                    btn.classList.add('copied');
+                    setTimeout(function() {
+                        btn.textContent = '复制';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }).catch(function(err) {
+                    console.error('复制失败:', err);
+                });
+            });
+            
+            pre.appendChild(btn);
+        });
+    }
+
     // 生成文章目录
     function generateTOC() {
         const content = document.getElementById('articleContent');
-        const toc = document.getElementById('toc');
         const tocList = document.getElementById('tocList');
 
         const headings = content.querySelectorAll('h1, h2, h3');
         
-        // 即使没有标题，也始终显示目录区域
         if (headings.length === 0) {
-            tocList.innerHTML = '<li style="color: #999; font-size: 14px;">暂无目录</li>';
+            tocList.innerHTML = '<li class="empty-toc">暂无目录</li>';
             return;
         }
+
+        tocList.innerHTML = '';
 
         headings.forEach(function(heading, index) {
             const id = 'heading-' + index;
@@ -373,7 +742,208 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', generateTOC);
+    // 点赞功能
+    function initLike() {
+        const likeBtn = document.getElementById('likeBtn');
+        if (!likeBtn) return;
+
+        const postId = likeBtn.dataset.postId;
+
+        // 检查是否已点赞
+        fetch('/api/post/' + postId + '/check-like', {
+            headers: {
+                'X-Visitor-Token': getVisitorToken()
+            }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.hasLiked) {
+                likeBtn.classList.add('liked');
+            }
+        });
+
+        // 点击点赞
+        likeBtn.addEventListener('click', function() {
+            fetch('/api/post/' + postId + '/like', {
+                method: 'POST',
+                headers: {
+                    'X-Visitor-Token': getVisitorToken()
+                }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var likeCount = document.getElementById('likeCount');
+                    var count = parseInt(likeCount.textContent);
+                    if (data.liked) {
+                        likeBtn.classList.add('liked');
+                        likeCount.textContent = count + 1;
+                    } else {
+                        likeBtn.classList.remove('liked');
+                        likeCount.textContent = count - 1;
+                    }
+                } else {
+                    alert(data.error || '操作失败');
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                alert('网络错误');
+            });
+        });
+    }
+
+    // 获取访客Token
+    function getVisitorToken() {
+        var token = localStorage.getItem('visitor_token');
+        if (!token) {
+            // 检查cookie
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.indexOf('visitor_token=') === 0) {
+                    token = cookie.substring('visitor_token='.length);
+                    break;
+                }
+            }
+        }
+        return token || '';
+    }
+
+    // 检查登录状态
+    function checkLogin() {
+        var token = getVisitorToken();
+        if (token) {
+            document.getElementById('commentLoginPrompt').style.display = 'none';
+            document.getElementById('commentFormContent').style.display = 'block';
+        } else {
+            document.getElementById('commentLoginPrompt').style.display = 'block';
+            document.getElementById('commentFormContent').style.display = 'none';
+        }
+    }
+
+    // 提交评论
+    function submitComment() {
+        var content = document.getElementById('commentContent').value.trim();
+        if (!content) {
+            alert('请输入评论内容');
+            return;
+        }
+
+        var postId = document.querySelector('#likeBtn').dataset.postId;
+
+        fetch('/api/comment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Visitor-Token': getVisitorToken()
+            },
+            body: JSON.stringify({
+                post_id: parseInt(postId),
+                content: content
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                alert('评论已提交，等待审核');
+                document.getElementById('commentContent').value = '';
+            } else {
+                alert(data.error || '提交失败');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('网络错误');
+        });
+    }
+
+    // 显示访客登录弹窗
+    function showVisitorModal() {
+        var nickname = prompt('请输入昵称:');
+        if (!nickname) return;
+        
+        var email = prompt('请输入邮箱 (可选):');
+        
+        fetch('/api/visitor/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname: nickname, email: email })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.token) {
+                localStorage.setItem('visitor_token', data.token);
+                document.cookie = 'visitor_token=' + data.token + '; path=/; max-age=' + (30 * 24 * 60 * 60);
+                checkLogin();
+                initLike();
+            } else {
+                alert(data.error || '登录失败');
+            }
+        });
+    }
+
+    // 显示回复表单
+    function showReplyForm(commentId) {
+        if (!isLogin) {
+            showVisitorModal();
+            return;
+        }
+        document.getElementById('reply-form-' + commentId).classList.add('show');
+    }
+
+    // 隐藏回复表单
+    function hideReplyForm(commentId) {
+        document.getElementById('reply-form-' + commentId).classList.remove('show');
+        document.getElementById('reply-content-' + commentId).value = '';
+    }
+
+    // 提交回复
+    function submitReply(parentId) {
+        var content = document.getElementById('reply-content-' + parentId).value.trim();
+        if (!content) {
+            alert('请输入回复内容');
+            return;
+        }
+
+        var postId = document.querySelector('#likeBtn').dataset.postId;
+
+        fetch('/api/comment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Visitor-Token': getVisitorToken()
+            },
+            body: JSON.stringify({
+                post_id: parseInt(postId),
+                parent_id: parentId,
+                content: content
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                alert(data.message || '回复已提交');
+                hideReplyForm(parentId);
+                if (data.status === 'approved') {
+                    location.reload();
+                }
+            } else {
+                alert(data.error || '提交失败');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('网络错误');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        generateTOC();
+        initCodeCopyButtons();
+        initLike();
+        checkLogin();
+    });
 </script>
 </body>
 </html>

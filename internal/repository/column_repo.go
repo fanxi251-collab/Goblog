@@ -48,20 +48,6 @@ func (r *ColumnRepository) GetAll() ([]model.Column, error) {
 	return columns, err
 }
 
-// GetParents 获取父级专栏
-func (r *ColumnRepository) GetParents() ([]model.Column, error) {
-	var columns []model.Column
-	err := r.db.Where("parent_id = 0").Order("sort ASC").Find(&columns).Error
-	return columns, err
-}
-
-// GetChildren 获取子级专栏
-func (r *ColumnRepository) GetChildren(parentID uint) ([]model.Column, error) {
-	var columns []model.Column
-	err := r.db.Where("parent_id = ?", parentID).Order("sort ASC").Find(&columns).Error
-	return columns, err
-}
-
 // Update 更新专栏
 func (r *ColumnRepository) Update(column *model.Column) error {
 	return r.db.Save(column).Error

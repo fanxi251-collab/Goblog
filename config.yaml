@@ -22,3 +22,13 @@ upload:
 # XSS清洗配置
 xss:
   enabled: true
+
+# 评论/留言配置
+comment:
+  rate_limit: 3                    # 频率限制（秒），同IP/Token间隔
+  auto_approve: true              # 是否自动审核通过（无敏感词时）
+  blocked_words:                  # 敏感词列表（触发直接拒绝）
+    - "fuck"
+    - "shit"
+    - "草泥马"
+    - "去你妈"

@@ -5,6 +5,7 @@ import (
 	"Goblog/internal/service"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,9 +28,19 @@ func NewPostHandler(postSvc *service.PostService, colSvc *service.ColumnService)
 func (h *PostHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize := 20
+	keyword := c.Query("keyword")
 
-	posts, total, _ := h.postService.GetByStatus("published", page, pageSize)
-	columns, _ := h.columnService.GetAll()
+	var posts []model.Post
+	var total int64
+	var columns, _ = h.columnService.GetAll()
+
+	if keyword != "" {
+		// 搜索模式
+		posts, total, _ = h.postService.Search(keyword, "", page, pageSize)
+	} else {
+		// 正常列表
+		posts, total, _ = h.postService.GetByStatus("published", page, pageSize)
+	}
 
 	totalPages := int(total) / pageSize
 	if int(total)%pageSize > 0 {
@@ -43,6 +54,7 @@ func (h *PostHandler) List(c *gin.Context) {
 		"page":       page,
 		"totalPages": totalPages,
 		"total":      total,
+		"keyword":    keyword,
 	})
 }
 
@@ -50,9 +62,19 @@ func (h *PostHandler) List(c *gin.Context) {
 func (h *PostHandler) Drafts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize := 20
+	keyword := c.Query("keyword")
 
-	posts, total, _ := h.postService.GetByStatus("draft", page, pageSize)
-	columns, _ := h.columnService.GetAll()
+	var posts []model.Post
+	var total int64
+	var columns, _ = h.columnService.GetAll()
+
+	if keyword != "" {
+		// 搜索模式
+		posts, total, _ = h.postService.Search(keyword, "", page, pageSize)
+	} else {
+		// 草稿列表
+		posts, total, _ = h.postService.GetByStatus("draft", page, pageSize)
+	}
 
 	totalPages := int(total) / pageSize
 	if int(total)%pageSize > 0 {
@@ -66,6 +88,7 @@ func (h *PostHandler) Drafts(c *gin.Context) {
 		"page":       page,
 		"totalPages": totalPages,
 		"total":      total,
+		"keyword":    keyword,
 	})
 }
 
@@ -102,9 +125,16 @@ func (h *PostHandler) Save(c *gin.Context) {
 	title := c.PostForm("title")
 	slug := c.PostForm("slug")
 	content := c.PostForm("content")
+	excerpt := c.PostForm("excerpt")
 	columnID, _ := strconv.ParseUint(c.PostForm("column_id"), 10, 32)
 	coverImage := c.PostForm("cover_image")
 	action := c.PostForm("action")
+
+	// 验证专栏必选
+	if columnID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请选择专栏"})
+		return
+	}
 
 	// 根据action设置状态
 	status := "draft"
@@ -112,23 +142,50 @@ func (h *PostHandler) Save(c *gin.Context) {
 		status = "published"
 	}
 
-	// 如果slug为空，自动生成
-	if slug == "" {
-		slug = generateSlug(title)
+	// 处理 slug
+	if id > 0 {
+		// 更新时：如果 slug 为空，获取原文章的 slug
+		if slug == "" {
+			oldPost, _ := h.postService.GetByID(uint(id))
+			if oldPost != nil {
+				slug = oldPost.Slug
+			}
+		}
+	} else {
+		// 新建时：如果 slug 为空，自动生成
+		if slug == "" {
+			slug = generateSlug(title)
+		}
+		// 检查 slug 是否已存在，存在则添加后缀
+		for {
+			exists, _ := h.postService.GetBySlug(slug)
+			if exists == nil {
+				break
+			}
+			slug = slug + "-" + randomString(4)
+		}
 	}
 
 	post := &model.Post{
 		Title:      title,
 		Slug:       slug,
 		Content:    content,
-		ColumnID:   uint(columnID),
+		Excerpt:    excerpt,
 		CoverImage: coverImage,
+		ColumnID:   uint(columnID),
 		Status:     status,
+		CreatedAt:  time.Now().Unix(),
 	}
 
 	var err error
 	if id > 0 {
 		post.ID = uint(id)
+		// 获取原有文章数据，保留 CreatedAt
+		oldPost, _ := h.postService.GetByID(uint(id))
+		if oldPost != nil {
+			post.CreatedAt = oldPost.CreatedAt
+			post.UpdatedAt = oldPost.UpdatedAt
+		}
 		err = h.postService.Update(post)
 	} else {
 		err = h.postService.Create(post)

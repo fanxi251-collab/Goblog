@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; color: #333; }
+        
+        /* 视频背景 */
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        
+        /* 导航栏 - 与 index.html 一致 */
+        .header { background: transparent; padding: 16px 0; position: sticky; top: 0; z-index: 100; }
+        .header .container { max-width: 90%; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .nav { display: flex; gap: 50px; }
+        .nav a { color: #222; text-decoration: none; font-size: 20px; font-weight: 500; transition: color 0.3s; }
+        .nav a:hover { color: #0070f3; }
+        
+        .blog-title { font-size: 24px; font-weight: 700; color: #222; }
+        
+        /* 三栏布局 */
+        .page-wrapper {
+            max-width: 100%;
+            margin: 40px auto;
+            padding: 0 50px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 30px;
+        }
+        
+        /* 左侧：专栏列表 */
+        .left-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+        }
+        
+        .column-list-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #222;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .column-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .column-item {
+            display: block;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .column-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(5px);
+        }
+        
+        .column-item.active {
+            background: #667eea;
+            color: #fff;
+        }
+        
+        /* 中间：文章网格 */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #222;
+        }
+        
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        
+        .post-card {
+            display: block;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .post-card .title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #222;
+            line-height: 1.4;
+        }
+        
+        .post-card .meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 右侧：留空 */
+        .right-sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- 视频背景 -->
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="/static/videos/columnbg.mp4" type="video/mp4">
+    </video>
+    
+    <!-- 导航栏 -->
+    <div class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="/">首页</a>
+                <a href="/column">专栏</a>
+                <a href="/message">留言板</a>
+                <a href="/about">关于</a>
+            </nav>
+            <h1 class="blog-title">灵序之夏</h1>
+        </div>
+    </div>
+    
+    <!-- 三栏布局 -->
+    <div class="page-wrapper">
+        <!-- 左侧：专栏列表 -->
+        <aside class="left-sidebar">
+            <div class="column-list-title">专栏</div>
+            <div class="column-list">
+            {{if .columns}}
+                {{range .columns}}
+                <a href="/column/{{.Slug}}" class="column-item {{if and .currentColumn (eq .Slug .currentColumn.Slug)}}active{{end}}">
+                    {{.Name}}
+                </a>
+                {{end}}
+            {{else}}
+                <div class="empty">暂无专栏</div>
+            {{end}}
+            </div>
+        </aside>
+        
+        <!-- 中间：文章网格 -->
+        <main class="main-content">
+            {{if .currentColumn}}
+            <h2 class="section-title">{{.currentColumn.Name}}</h2>
+            {{end}}
+            
+            {{if .posts}}
+            <div class="posts-grid">
+                {{range .posts}}
+                <a href="/post/{{.Slug}}" class="post-card">
+                    <div class="title">{{.Title}}</div>
+                    <div class="meta">{{.ViewCount}} 阅读 · {{.FormatDate}}</div>
+                </a>
+                {{end}}
+            </div>
+            {{else}}
+            <div class="empty">暂无文章</div>
+            {{end}}
+        </main>
+        
+        <!-- 右侧：留空 -->
+        <aside class="right-sidebar"></aside>
+    </div>
+</body>
+</html>

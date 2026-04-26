@@ -1,11 +1,9 @@
 package front
 
 import (
-	"Goblog/internal/model"
 	"Goblog/internal/service"
 
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,67 +12,66 @@ import (
 type HomeHandler struct {
 	postService   *service.PostService
 	columnService *service.ColumnService
+	devlogService *service.DevlogService
 }
 
 // NewHomeHandler 创建首页处理器
-func NewHomeHandler(postSvc *service.PostService, colSvc *service.ColumnService) *HomeHandler {
+func NewHomeHandler(postSvc *service.PostService, colSvc *service.ColumnService, devlogSvc *service.DevlogService) *HomeHandler {
 	return &HomeHandler{
 		postService:   postSvc,
 		columnService: colSvc,
+		devlogService: devlogSvc,
 	}
 }
 
 // Index 首页
 func (h *HomeHandler) Index(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize := 10
-	search := c.Query("search")
-
-	var posts []model.Post
-	var total int64
-	var err error
-
 	columns, _ := h.columnService.GetAll()
-
-	// 根据是否有搜索参数，决定获取方式
-	if search != "" {
-		// 搜索模式 - 搜索无专栏的文章
-		posts, total, err = h.postService.SearchNoColumn(search, page, pageSize)
-	} else {
-		// 首页 - 获取无专栏的已发布文章
-		posts, total, err = h.postService.GetPublishedNoColumn(page, pageSize)
-	}
-
-	if err != nil {
-		posts = []model.Post{}
-		total = 0
-	}
-
-	totalPages := int(total) / pageSize
-	if int(total)%pageSize > 0 {
-		totalPages++
-	}
 
 	// 获取统计数据
 	postsTotal, likesTotal, commentsTotal, _ := h.postService.GetStats()
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"title":         "灵序之夏",
-		"posts":         posts,
 		"columns":       columns,
-		"page":          page,
-		"totalPages":    totalPages,
-		"total":         total,
-		"search":        search,
 		"postsTotal":    postsTotal,
 		"likesTotal":    likesTotal,
 		"commentsTotal": commentsTotal,
 	})
 }
 
-// About 关于页面
-func (h *HomeHandler) About(c *gin.Context) {
-	c.HTML(http.StatusOK, "about.html", gin.H{
-		"title": "关于我 - 灵序之夏",
+// Search 搜索文章API
+func (h *HomeHandler) Search(c *gin.Context) {
+	keyword := c.Query("q")
+	if keyword == "" {
+		c.JSON(http.StatusOK, gin.H{"success": true, "data": []interface{}{}})
+		return
+	}
+
+	// 搜索已发布文章，返回标题、slug、创建时间、专栏slug
+	posts, total, _ := h.postService.Search(keyword, "published", 1, 10)
+
+	var results []interface{}
+	for _, post := range posts {
+		// 获取专栏slug
+		columnSlug := ""
+		if post.ColumnID > 0 {
+			if column, err := h.columnService.GetByID(post.ColumnID); err == nil && column != nil {
+				columnSlug = column.Slug
+			}
+		}
+		results = append(results, gin.H{
+			"id":          post.ID,
+			"title":       post.Title,
+			"slug":        post.Slug,
+			"column_slug": columnSlug,
+			"created_at":  post.CreatedAt,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    results,
+		"total":   total,
 	})
 }

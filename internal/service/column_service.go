@@ -42,16 +42,6 @@ func (s *ColumnService) GetAll() ([]model.Column, error) {
 	return s.columnRepo.GetAll()
 }
 
-// GetParents 获取父级专栏
-func (s *ColumnService) GetParents() ([]model.Column, error) {
-	return s.columnRepo.GetParents()
-}
-
-// GetChildren 获取子级专栏
-func (s *ColumnService) GetChildren(parentID uint) ([]model.Column, error) {
-	return s.columnRepo.GetChildren(parentID)
-}
-
 // Update 更新专栏
 func (s *ColumnService) Update(column *model.Column) error {
 	// 检查slug唯一性（排除自己）

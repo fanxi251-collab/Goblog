@@ -56,6 +56,25 @@
         }
         .editor-toolbar button:hover { background: #667eea; color: #fff; }
         .editor-toolbar .separator { width: 1px; background: #ddd; margin: 0 5px; }
+        
+        /* 封面上传样式 */
+        .cover-upload { display: flex; flex-direction: column; align-items: flex-start; }
+        .cover-preview {
+            width: 400px;
+            height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .cover-preview:hover { border-color: #667eea; }
+        .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .cover-placeholder { color: #999; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -78,13 +97,32 @@
                     <input type="text" name="title" value="{{.post.Title}}" required>
                 </div>
                 <div class="form-group">
-                    <label>专栏</label>
-                    <select name="column_id">
-                        <option value="0" {{if eq .post.ColumnID 0}}selected{{end}}>首页文章</option>
+                    <label>文章简介</label>
+                    <textarea name="excerpt" rows="3" placeholder="请输入文章简介（可选）" style="width: 100%; padding: 12px 16px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; resize: vertical;">{{.post.Excerpt}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>专栏（必选）</label>
+                    <select name="column_id" required>
+                        <option value="">请选择专栏</option>
                         {{range .columns}}
                         <option value="{{.ID}}" {{if eq .ID $.post.ColumnID}}selected{{end}}>{{.Name}}</option>
                         {{end}}
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>封面图片</label>
+                    <input type="hidden" name="cover_image" id="coverImage" value="{{.post.CoverImage}}">
+                    <div class="cover-upload">
+                        <div class="cover-preview" id="coverPreview">
+                            {{if .post.CoverImage}}
+                            <img src="/static/{{.post.CoverImage}}" alt="封面预览">
+                            {{else}}
+                            <div class="cover-placeholder">点击上传封面图片</div>
+                            {{end}}
+                        </div>
+                        <input type="file" id="coverUpload" accept="image/*" style="display:none" onchange="uploadCover(this)">
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('coverUpload').click()" style="margin-top:10px;">上传封面</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>内容（Markdown）</label>
@@ -105,7 +143,8 @@
                         <button type="button" onclick="insertFormat('\n```\n', '\n```\n')">代码块</button>
                         <button type="button" onclick="insertFormat('\n> ', '')">引用</button>
                         <button type="button" onclick="insertFormat('[', '](url)')">链接</button>
-                        <button type="button" onclick="insertFormat('![', '](图片地址)')">图片</button>
+                        <button type="button" onclick="document.getElementById('imageUpload').click()">图片</button>
+                        <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="uploadImage(this)">
                     </div>
                     <textarea name="content" id="content" style="width: 100%; min-height: 400px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; font-family: monospace; font-size: 14px; line-height: 1.6;">{{.post.Content}}</textarea>
                 </div>
@@ -120,6 +159,7 @@
     </div>
 
     <script>
+        // 插入格式到文本框
         function insertFormat(prefix, suffix) {
             const textarea = document.getElementById('content');
             const start = textarea.selectionStart;
@@ -137,6 +177,71 @@
             textarea.setSelectionRange(newPos, newPos);
         }
 
+        // 上传图片
+        function uploadImage(input) {
+            if (!input.files || !input.files[0]) return;
+            
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/admin/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.success === 1) {
+                    // 插入 Markdown 图片链接到文本框
+                    insertFormat(data.data.url, '');
+                    // 清空 input 以便重复选择同一文件
+                    input.value = '';
+                } else {
+                    alert('上传失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(err => {
+                alert('请求失败');
+            });
+        }
+
+        // 上传封面
+        function uploadCover(input) {
+            const postID = document.querySelector('input[name="id"]').value;
+            if (!postID) {
+                alert('请先保存文章后再上传封面');
+                return;
+            }
+            
+            if (!input.files || !input.files[0]) return;
+            
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('post_id', postID);
+            
+            fetch('/admin/upload/cover', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.success === 1) {
+                    // 更新隐藏字段
+                    document.getElementById('coverImage').value = data.data.path;
+                    // 更新预览
+                    document.getElementById('coverPreview').innerHTML = '<img src="' + data.data.url + '" alt="封面预览">';
+                    // 清空 input
+                    input.value = '';
+                } else {
+                    alert('上传失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(err => {
+                alert('请求失败');
+            });
+        }
+
         function submitPost(action) {
             const form = document.getElementById('postForm');
             const formData = new FormData(form);
@@ -152,6 +257,10 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // 如果是新文章，保存后更新ID以便后续上传封面
+                    if (data.id) {
+                        document.querySelector('input[name="id"]').value = data.id;
+                    }
                     messageEl.style.display = 'block';
                     if (action === 'publish') {
                         messageEl.style.background = '#d4edda';
@@ -162,9 +271,12 @@
                         messageEl.style.color = '#856404';
                         messageEl.textContent = '保存成功！';
                     }
-                    setTimeout(() => {
-                        window.location.href = action === 'publish' ? '/admin/posts' : '/admin/drafts';
-                    }, 1500);
+                    // 保存后不跳转，用户可以继续上传封面
+                    if (action === 'publish') {
+                        setTimeout(() => {
+                            window.location.href = '/admin/posts';
+                        }, 1500);
+                    }
                 } else {
                     messageEl.style.display = 'block';
                     messageEl.style.background = '#f8d7da';

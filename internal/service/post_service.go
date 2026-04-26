@@ -49,24 +49,14 @@ func (s *PostService) GetByColumn(columnID uint, status string, page, pageSize i
 	return s.postRepo.GetByColumn(columnID, status, offset, pageSize)
 }
 
-// GetPublished 获取已发布文章
-func (s *PostService) GetPublished(page, pageSize int) ([]model.Post, int64, error) {
-	return s.postRepo.GetPublished((page-1)*pageSize, pageSize)
+// Search 搜索文章（标题+内容）
+func (s *PostService) Search(keyword string, status string, page, pageSize int) ([]model.Post, int64, error) {
+	return s.postRepo.GetBySearch(keyword, status, (page-1)*pageSize, pageSize)
 }
 
-// GetPublishedNoColumn 获取已发布且无专栏的文章（首页用）
-func (s *PostService) GetPublishedNoColumn(page, pageSize int) ([]model.Post, int64, error) {
-	return s.postRepo.GetPublishedNoColumn((page-1)*pageSize, pageSize)
-}
-
-// Search 搜索文章（按标题）
-func (s *PostService) Search(keyword string, page, pageSize int) ([]model.Post, int64, error) {
-	return s.postRepo.GetBySearch(keyword, (page-1)*pageSize, pageSize)
-}
-
-// SearchNoColumn 搜索无专栏的文章（首页搜索用）
-func (s *PostService) SearchNoColumn(keyword string, page, pageSize int) ([]model.Post, int64, error) {
-	return s.postRepo.GetBySearchNoColumn(keyword, (page-1)*pageSize, pageSize)
+// SearchInColumn 在专栏内搜索文章
+func (s *PostService) SearchInColumn(columnID uint, keyword string, status string, page, pageSize int) ([]model.Post, int64, error) {
+	return s.postRepo.SearchInColumn(columnID, keyword, status, (page-1)*pageSize, pageSize)
 }
 
 // GetAll 获取所有文章
@@ -120,12 +110,12 @@ func (s *PostService) Unpublish(id uint) error {
 	return s.postRepo.Update(post)
 }
 
-// IncrViewCount 增加浏览次数
-func (s *PostService) IncrViewCount(id uint) error {
-	return s.postRepo.IncrViewCount(id)
-}
-
 // GetStats 获取统计数据
 func (s *PostService) GetStats() (int64, int64, int64, error) {
 	return s.postRepo.GetStats()
+}
+
+// GetLatestUpdateTime 获取最后更新时间
+func (s *PostService) GetLatestUpdateTime() (int64, error) {
+	return s.postRepo.GetLatestUpdateTime()
 }

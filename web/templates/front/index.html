@@ -41,7 +41,7 @@
             backdrop-filter: none;
             border-bottom: none;;
             padding: 16px 0;
-            position: sticky;
+            /*position: sticky;*/
             top: 0;
             z-index: 100;
         }
@@ -63,7 +63,7 @@
         .nav a {
             color: var(--blog-black);
             text-decoration: none;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 500;
             transition: color 0.3s;
         }
@@ -108,22 +108,30 @@
         .about-card {
             width: 350px;
             margin-right: 50px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(240,255,240,0.3) 100%);
+            background: rgba(255, 255, 255, 0.6);   /* 纯白半透明 */
+            backdrop-filter: blur(8px);              /* 毛玻璃效果 */
             border-radius: var(--blog-radius-card);
             padding: 20px 16px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            height: 240px;               /* 固定高度，与文章卡片一致 */
+            min-height: 240px;               /* 最小高度 */
             display: flex;
             flex-direction: column;
             justify-content: center;     /* 垂直居中 */
-            overflow: hidden;            /* 防止内容溢出 */
+            overflow: auto;            /* 允许滚动 */
         }
         
         .about-card .icon {
             font-size: 48px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             line-height: 1;
+        }
+        
+        .about-card .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--blog-black);
+            margin-bottom: 8px;
         }
         
         .about-card .email {
@@ -139,6 +147,52 @@
             color: var(--blog-black);
             line-height: 1.6;
             margin-bottom: 15px;
+        }
+        
+        .about-card .time-display {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--blog-black);
+            margin-bottom: 12px;
+        }
+        
+        .about-card .calendar-display {
+            font-size: 12px;
+        }
+        
+        .about-card .calendar-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--blog-black);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .about-card .calendar-weekdays {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            color: var(--blog-gray);
+            margin-bottom: 4px;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        .about-card .calendar-days {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 2px;
+            text-align: center;
+        }
+        
+        .about-card .calendar-days span {
+            font-size: 11px;
+            padding: 2px 0;
+        }
+        
+        .about-card .calendar-days span.today {
+            background: var(--blog-red);
+            color: var(--blog-white);
+            border-radius: 50%;
         }
         
         .about-card .stats-row {
@@ -166,7 +220,7 @@
 /* 文章网格 */
         .posts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, 280px);
             gap: 24px;
         }
         
@@ -188,12 +242,6 @@
         .post-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        }
-        
-        .post-card .card-icon {
-            font-size: 50px;
-            text-align: center;
-            margin-bottom: 10px;
         }
         
         .post-card .content {
@@ -227,6 +275,55 @@
             color: #3a3a3a;
             text-decoration: none;
             
+        }
+        
+        /* 专栏列表容器 */
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--blog-black);
+        }
+        
+        .columns-container {
+            background: rgba(255, 255, 255, 0.5);  /* 纯白透明（半透白） */
+            /* 已去掉 backdrop-filter */
+            border-radius: var(--blog-radius-card);
+            padding: 24px;
+            box-shadow: var(--blog-card-shadow);
+            width: 500px;            /* 固定宽度 */
+            margin-left: 0;          /* 确保左对齐 */
+
+        }
+        
+        .columns-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .column-card {
+            display: block;
+            padding: 12px 16px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .column-card:hover .column-name {
+            color: #1b5e2a;
+        }
+        
+        .column-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--blog-black);
+            margin-bottom: 6px;
+        }
+        
+        .column-desc {
+            font-size: 14px;
+            color: var(--blog-gray);
+            line-height: 1.5;
         }
         
         /* 分页 */
@@ -277,8 +374,8 @@
             <nav class="nav">
                 <a href="/">首页</a>
                 <a href="/column">专栏</a>
+                <a href="/devlog">开发日志</a>
                 <a href="/message">留言板</a>
-                <a href="/about">关于</a>
             </nav>
             <h1 class="blog-title">灵序之夏</h1>
         </div>
@@ -286,52 +383,32 @@
     
     <!-- 主内容 (两栏布局) -->
     <div class="container">
-        <!-- 左侧文章区域 -->
+        <!-- 左侧专栏区域 -->
         <div class="main-content">
-            <!-- 文章网格 -->
-            {{if .posts}}
-            <div class="posts-grid">
-                {{range .posts}}
-                <a href="/post/{{.Slug}}" class="post-card">
-                    <div class="card-icon">🌻</div>
-                    <div class="content">
-                        <div class="title">{{.Title}}</div>
-                        <div class="meta-row">
-                            <span>{{.FormatDate}}</span>
-                            <span>{{.ViewCount}} 阅读</span>
-                        </div>
-                        <div class="meta-row">
-                            <span>{{.LikeCount}} 点赞</span>
-                            <span>{{.CommentCount}} 评论</span>
-                        </div>
-                    </div>
-                </a>
-                {{end}}
+            {{if .columns}}
+            <div class="columns-container">
+                <h2 class="section-title">专栏列表</h2>
+                <div class="columns-grid">
+                    {{range .columns}}
+                    <a href="/column/{{.Slug}}" class="column-card">
+                        <div class="column-name">{{.Name}}</div>
+                        <div class="column-desc">{{.Description}}</div>
+                    </a>
+                    {{end}}
+                </div>
             </div>
-        {{else}}
-        <div class="empty">
-            <p>暂无文章</p>
-        </div>
-        {{end}}
-        
-        <!-- 分页 -->
-        {{if gt .totalPages 1}}
-        <div class="pagination">
-            {{if gt .page 1}}
-            <a href="/?page={{sub .page 1}}">上一页</a>
+            {{else}}
+            <div class="empty">
+                <p>暂无专栏</p>
+            </div>
             {{end}}
-            <span class="current">{{.page}} / {{.totalPages}}</span>
-            {{if lt .page .totalPages}}
-            <a href="/?page={{add .page 1}}">下一页</a>
-            {{end}}
-        </div>
-        {{end}}
         </div>
         
         <!-- 右侧侧边栏 -->
         <aside class="sidebar">
             <div class="about-card">
                 <div class="icon">🌱</div>
+                <div class="name">泛斯特汐汐</div>
                 <div class="email">746834335@qq.com</div>
                 <div class="motto">愿寻若木发新蕊，祈望少年携春归</div>
             </div>
@@ -339,7 +416,7 @@
             <div class="about-card" style="margin-top: 20px;">
                 <div class="icon">🌈</div>
                 <div class="email">灵序之夏</div>
-                <div class="motto">知识分享，技术交流，生活琐碎</div>
+                <div class="motto">灵序入夏，风携温柔，岁月皆安</div>
                 <div class="stats-row">
                     <div class="stat-item">
                         <div class="stat-num">{{.postsTotal}}</div>
@@ -355,7 +432,58 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="about-card" style="margin-top: 20px;">
+                <div class="icon">📅</div>
+                <div class="time-display" id="time-display"></div>
+                <div class="calendar-display" id="calendar-display"></div>
+            </div>
         </aside>
     </div>
+    
+    <script>
+        // 时间显示
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('time-display').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // 日历显示
+        function updateCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = now.getDate();
+            
+            const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
+                          '七月', '八月', '九月', '十月', '十一月', '十二月'];
+            
+            let html = `<div class="calendar-header">${year}年 ${monthNames[month]}</div>`;
+            html += '<div class="calendar-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>';
+            html += '<div class="calendar-days">';
+            
+            for (let i = 0; i < firstDay; i++) {
+                html += '<span></span>';
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = day === today ? 'today' : '';
+                html += `<span class="${isToday}">${day}</span>`;
+            }
+            
+            html += '</div>';
+            document.getElementById('calendar-display').innerHTML = html;
+        }
+        
+        updateTime();
+        updateCalendar();
+        setInterval(updateTime, 1000);
+    </script>
 </body>
 </html>

@@ -95,3 +95,43 @@ func (s *CommentService) BatchApprove(ids []uint) error {
 func (s *CommentService) BatchReject(ids []uint) error {
 	return s.commentRepo.BatchUpdateStatus(ids, "rejected")
 }
+
+// GetReplies 获取评论的所有回复
+func (s *CommentService) GetReplies(parentID uint) ([]model.Comment, error) {
+	return s.commentRepo.GetReplies(parentID)
+}
+
+// GetMessageBoardWithReplies 获取留言板评论（含回复树）
+func (s *CommentService) GetMessageBoardWithReplies(page, pageSize int) ([]model.Comment, int64, error) {
+	offset := (page - 1) * pageSize
+	// 获取顶层评论
+	comments, total, err := s.commentRepo.GetTopLevelComments(0, offset, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 为每个顶层评论加载回复
+	for i := range comments {
+		replies, _ := s.commentRepo.GetReplies(comments[i].ID)
+		comments[i].Replies = replies
+	}
+
+	return comments, total, nil
+}
+
+// DeleteWithReplies 级联删除评论及其回复
+func (s *CommentService) DeleteWithReplies(id uint) error {
+	return s.commentRepo.DeleteWithReplies(id)
+}
+
+// GetArticleComments 获取文章评论（后台）
+func (s *CommentService) GetArticleComments(status string, page, pageSize int) ([]model.Comment, int64, error) {
+	offset := (page - 1) * pageSize
+	return s.commentRepo.GetArticleComments(status, offset, pageSize)
+}
+
+// GetMessageBoardComments 获取留言板评论（后台）
+func (s *CommentService) GetMessageBoardComments(status string, page, pageSize int) ([]model.Comment, int64, error) {
+	offset := (page - 1) * pageSize
+	return s.commentRepo.GetMessageBoardComments(status, offset, pageSize)
+}

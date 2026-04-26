@@ -63,6 +63,44 @@ func (r *CommentRepository) GetPending(offset, limit int) ([]model.Comment, int6
 	return r.GetByPostID(0, "pending", offset, limit)
 }
 
+// GetArticleComments 获取文章评论（PostID > 0）
+func (r *CommentRepository) GetArticleComments(status string, offset, limit int) ([]model.Comment, int64, error) {
+	var comments []model.Comment
+	var total int64
+
+	query := r.db.Model(&model.Comment{}).Where("post_id > 0")
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	err := query.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = query.Offset(offset).Limit(limit).Order("created_at DESC").Find(&comments).Error
+	return comments, total, err
+}
+
+// GetMessageBoardComments 获取留言板评论（PostID = 0）
+func (r *CommentRepository) GetMessageBoardComments(status string, offset, limit int) ([]model.Comment, int64, error) {
+	var comments []model.Comment
+	var total int64
+
+	query := r.db.Model(&model.Comment{}).Where("post_id = 0")
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	err := query.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = query.Offset(offset).Limit(limit).Order("created_at DESC").Find(&comments).Error
+	return comments, total, err
+}
+
 // GetMessageBoard 获取留言板评论
 func (r *CommentRepository) GetMessageBoard(offset, limit int) ([]model.Comment, int64, error) {
 	// postID = 0 表示留言板
@@ -107,4 +145,56 @@ func (r *CommentRepository) Delete(id uint) error {
 // BatchUpdateStatus 批量更新状态
 func (r *CommentRepository) BatchUpdateStatus(ids []uint, status string) error {
 	return r.db.Model(&model.Comment{}).Where("id IN ?", ids).Update("status", status).Error
+}
+
+// GetLastCommentTime 获取最后评论时间（用于频率限制）
+func (r *CommentRepository) GetLastCommentTime(visitorIP string) (int64, error) {
+	var comment model.Comment
+	err := r.db.Where("ip = ? AND post_id = 0", visitorIP).Order("created_at DESC").First(&comment).Error
+	if err != nil {
+		return 0, err
+	}
+	return comment.CreatedAt, nil
+}
+
+// GetReplies 获取某条评论的所有回复
+func (r *CommentRepository) GetReplies(parentID uint) ([]model.Comment, error) {
+	var comments []model.Comment
+	err := r.db.Where("parent_id = ? AND status = ?", parentID, "approved").
+		Order("created_at ASC").Find(&comments).Error
+	return comments, err
+}
+
+// GetRepliesWithStatus 获取某条评论的所有回复（包含所有状态，用于后台）
+func (r *CommentRepository) GetRepliesWithStatus(parentID uint) ([]model.Comment, error) {
+	var comments []model.Comment
+	err := r.db.Where("parent_id = ?", parentID).
+		Order("created_at ASC").Find(&comments).Error
+	return comments, err
+}
+
+// GetTopLevelComments 获取留言板的顶层评论（不含回复）
+func (r *CommentRepository) GetTopLevelComments(postID uint, offset, limit int) ([]model.Comment, int64, error) {
+	var comments []model.Comment
+	var total int64
+
+	err := r.db.Model(&model.Comment{}).Where("post_id = ? AND parent_id = 0 AND status = ?", postID, "approved").
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = r.db.Where("post_id = ? AND parent_id = 0 AND status = ?", postID, "approved").
+		Offset(offset).Limit(limit).Order("created_at DESC").Find(&comments).Error
+	return comments, total, err
+}
+
+// DeleteWithReplies 级联删除评论及其所有回复
+func (r *CommentRepository) DeleteWithReplies(id uint) error {
+	// 先删除所有子回复
+	if err := r.db.Where("parent_id = ?", id).Delete(&model.Comment{}).Error; err != nil {
+		return err
+	}
+	// 再删除主评论
+	return r.db.Delete(&model.Comment{}, id).Error
 }

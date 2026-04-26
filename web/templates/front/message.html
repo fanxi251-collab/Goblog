@@ -5,13 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.title}}</title>
     <style>
+        :root {
+            --blog-white: #ffffff;
+            --blog-black: #222222;
+            --blog-red: #ff385c;
+            --blog-gray: #6a6a6a;
+            --blog-light-bg: #f2f2f2;
+            --blog-card-shadow: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08);
+            --blog-radius-card: 20px;
+        }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, sans-serif; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg,667eea 0%,#764ba2 100%); padding: 20px 0; position: sticky; top: 0; }
-        .header .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #fff; }
-        .nav a { color: #fff; text-decoration: none; margin-left: 30px; }
-        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        
+        /* 视频背景 */
+        .video-bg {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            object-fit: cover;
+            object-position: center 40%;
+            display: block;
+        }
+        
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--blog-white); color: var(--blog-black); line-height: 1.6; }
+        
+        /* 导航栏 */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: transparent;
+            backdrop-filter: none;
+            border-bottom: none;
+            padding: 12px 0;
+            pointer-events: auto;
+        }
+        
+        .header .container {
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 50px;
+        }
+        
+        .nav a {
+            color: var(--blog-black);
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover {
+            color: #0070f3;
+        }
+        
+        .blog-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--blog-black);
+        }
+        
+        .container { max-width: 800px; margin: 20px auto 40px; padding: 0 20px; }
         .section-title { font-size: 28px; margin-bottom: 30px; }
         
         .message-form { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px; }
@@ -23,10 +87,12 @@
         }
         .form-group textarea { min-height: 120px; resize: vertical; }
         .btn {
-            padding: 12px 32px; background: linear-gradient(135deg,667eea 0%,#764ba2 100%);
+            padding: 12px 32px; background: #87CEEB;
             color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;
         }
         .btn:hover { opacity: 0.9; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         
         .comments { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .comment { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
@@ -37,40 +103,83 @@
         .comment-content { color: #333; }
         
         .empty { text-align: center; padding: 40px; color: #999; }
+        
+        /* 弹窗样式 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; position: relative; }
+        
+        /* 用户信息栏 */
+        .user-info { display: none; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+        .user-info.show { display: flex; }
+        
+        /* 回复样式 */
+        .comment-reply { margin-left: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px; }
+        .comment-reply .comment-header { margin-bottom: 5px; }
+        .comment-reply .comment-content { font-size: 14px; }
+        .comment-actions { margin-top: 10px; }
+        .comment-actions button { background: none; border: none; color: #667eea; cursor: pointer; font-size: 12px; padding: 0; margin-right: 10px; }
+        .comment-actions button:hover { text-decoration: underline; }
+        
+        /* 回复表单 */
+        .reply-form { margin-top: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; }
+        .reply-form.show { display: block; }
+        .reply-form textarea { min-height: 80px; }
+        .reply-form .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        
+        .error-msg { color: #dc3545; font-size: 14px; margin-top: 5px; display: none; }
+        .error-msg.show { display: block; }
     </style>
 </head>
 <body>
+    <!-- 视频背景 -->
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="/static/videos/message.mp4" type="video/mp4">
+    </video>
+    
+    <!-- 导航栏 -->
     <div class="header">
         <div class="container">
-            <a href="/" class="logo">灵序之夏</a>
             <nav class="nav">
                 <a href="/">首页</a>
                 <a href="/column">专栏</a>
+                <a href="/devlog">开发日志</a>
                 <a href="/message">留言板</a>
-                <a href="/about">关于</a>
             </nav>
+            <h1 class="blog-title">灵序之夏</h1>
         </div>
     </div>
 
     <div class="container">
-        <h1 class="section-title">留言板</h1>
         
         <div class="message-form">
-            <h3>发表评论</h3>
+            <h3>发表留言</h3>
+            
+            <!-- 已登录用户信息 -->
+            <div id="userInfo" class="user-info">
+                <span>欢迎，</span><span id="userNickname" style="color: #667eea; font-weight: bold;"></span>
+                <button class="btn btn-sm" onclick="showEditModal()">修改</button>
+            </div>
+            
             <form id="messageForm">
-                <div class="form-group">
-                    <label>昵称 *</label>
-                    <input type="text" name="nickname" required placeholder="请输入昵称">
+                <!-- 未登录时显示输入框 -->
+                <div id="guestFields">
+                    <div class="form-group">
+                        <label>昵称 *</label>
+                        <input type="text" id="nickname" name="nickname" placeholder="请输入昵称">
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱（选填）</label>
+                        <input type="email" id="email" name="email" placeholder="用于接收回复通知">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>邮箱（选填）</label>
-                    <input type="email" name="email" placeholder="用于接收回复通知">
-                </div>
+                
                 <div class="form-group">
                     <label>内容 *</label>
-                    <textarea name="content" required placeholder="想说点什么..."></textarea>
+                    <textarea id="content" name="content" required placeholder="想说点什么..."></textarea>
                 </div>
-                <button type="submit" class="btn">提交留言</button>
+                <div id="contentError" class="error-msg"></div>
+                <button type="submit" class="btn" id="submitBtn">提交留言</button>
             </form>
         </div>
 
@@ -78,12 +187,42 @@
             <h3>全部留言 ({{.total}})</h3>
             {{if .comments}}
                 {{range .comments}}
-                <div class="comment">
+                <div class="comment" id="comment-{{.ID}}">
                     <div class="comment-header">
                         <span class="comment-author">{{.Nickname}}</span>
-                        <span class="comment-date">{{.CreatedAt}}</span>
+                        <span class="comment-date">{{formatTime .CreatedAt}}</span>
                     </div>
                     <div class="comment-content">{{.Content}}</div>
+                    <div class="comment-actions">
+                        <button onclick="showReplyForm({{.ID}})">回复</button>
+                    </div>
+                    
+                    <!-- 回复表单 -->
+                    <div id="reply-form-{{.ID}}" class="reply-form">
+                        <input type="hidden" name="parent_id" value="{{.ID}}">
+                        <div class="form-group">
+                            <textarea id="reply-content-{{.ID}}" name="content" placeholder="写下你的回复..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm" onclick="submitReply({{.ID}})">提交回复</button>
+                            <button type="button" class="btn btn-sm" style="background: #999;" onclick="hideReplyForm({{.ID}})">取消</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 递归显示回复（最多1级） -->
+                    {{if .Replies}}
+                    <div class="replies">
+                        {{range .Replies}}
+                        <div class="comment comment-reply" id="reply-{{.ID}}">
+                            <div class="comment-header">
+                                <span class="comment-author">{{.Nickname}}</span>
+                                <span class="comment-date">{{formatTime .CreatedAt}}</span>
+                            </div>
+                            <div class="comment-content">{{.Content}}</div>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{end}}
                 </div>
                 {{end}}
             {{else}}
@@ -92,26 +231,288 @@
         </div>
     </div>
 
+    <!-- 注册弹窗 -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <h3>欢迎留言</h3>
+            <p style="margin-bottom: 20px; color: #666;">请先留下您的昵称（邮箱可选）</p>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>昵称 *</label>
+                    <input type="text" id="regNickname" required placeholder="请输入昵称">
+                </div>
+                <div class="form-group">
+                    <label>邮箱（选填）</label>
+                    <input type="email" id="regEmail" placeholder="用于接收回复通知">
+                </div>
+                <div id="regError" class="error-msg"></div>
+                <button type="submit" class="btn" style="width: 100%;">开始留言</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 修改信息弹窗 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>修改信息</h3>
+            <form id="editForm">
+                <div class="form-group">
+                    <label>昵称 *</label>
+                    <input type="text" id="editNickname" required>
+                </div>
+                <div class="form-group">
+                    <label>邮箱（选填）</label>
+                    <input type="email" id="editEmail">
+                </div>
+                <div id="editError" class="error-msg"></div>
+                <button type="submit" class="btn" style="width: 100%;">保存</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-    document.getElementById('messageForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        try {
-            const res = await fetch('/message', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert(data.error);
+        let currentToken = localStorage.getItem('visitor_token') || '';
+        let isLogin = false;
+
+        // 页面加载时检查登录状态
+        async function checkVisitor() {
+            try {
+                const res = await fetch('/api/visitor/check');
+                const data = await res.json();
+                
+                if (data.is_login && data.visitor) {
+                    isLogin = true;
+                    currentToken = localStorage.getItem('visitor_token');
+                    
+                    // 显示用户信息
+                    document.getElementById('userInfo').classList.add('show');
+                    document.getElementById('userNickname').textContent = data.visitor.nickname;
+                    document.getElementById('nickname').value = data.visitor.nickname;
+                    document.getElementById('email').value = data.visitor.email || '';
+                    
+                    // 隐藏输入框
+                    document.getElementById('guestFields').style.display = 'none';
+                } else {
+                    // 显示注册弹窗
+                    document.getElementById('registerModal').classList.add('show');
+                }
+            } catch(e) {
+                console.error('检查访客失败:', e);
             }
-        } catch(err) {
-            alert('提交失败，请重试');
         }
-    });
+
+        // 注册新访客
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const nickname = document.getElementById('regNickname').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const errorEl = document.getElementById('regError');
+            
+            if (!nickname) {
+                errorEl.textContent = '昵称不能为空';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('nickname', nickname);
+                formData.append('email', email);
+                
+                const res = await fetch('/api/visitor/register', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('visitor_token', data.token);
+                    currentToken = data.token;
+                    isLogin = true;
+                    
+                    document.getElementById('registerModal').classList.remove('show');
+                    document.getElementById('userInfo').classList.add('show');
+                    document.getElementById('userNickname').textContent = nickname;
+                    document.getElementById('nickname').value = nickname;
+                    document.getElementById('email').value = email;
+                    document.getElementById('guestFields').style.display = 'none';
+                } else {
+                    errorEl.textContent = data.error || '注册失败';
+                    errorEl.classList.add('show');
+                }
+            } catch(e) {
+                errorEl.textContent = '注册失败，请重试';
+                errorEl.classList.add('show');
+            }
+        });
+
+        // 显示修改弹窗
+        function showEditModal() {
+            document.getElementById('editNickname').value = document.getElementById('nickname').value;
+            document.getElementById('editEmail').value = document.getElementById('email').value;
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        // 修改信息
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const nickname = document.getElementById('editNickname').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const errorEl = document.getElementById('editError');
+            
+            if (!nickname) {
+                errorEl.textContent = '昵称不能为空';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('nickname', nickname);
+                formData.append('email', email);
+                
+                const res = await fetch('/api/visitor/update', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Visitor-Token': currentToken }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('userNickname').textContent = nickname;
+                    document.getElementById('nickname').value = nickname;
+                    document.getElementById('email').value = email;
+                    document.getElementById('editModal').classList.remove('show');
+                    alert('信息已更新');
+                } else {
+                    errorEl.textContent = data.error || '更新失败';
+                    errorEl.classList.add('show');
+                }
+            } catch(e) {
+                errorEl.textContent = '更新失败，请重试';
+                errorEl.classList.add('show');
+            }
+        });
+
+        // 提交留言
+        document.getElementById('messageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const content = document.getElementById('content').value.trim();
+            const errorEl = document.getElementById('contentError');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (!content) {
+                errorEl.textContent = '内容不能为空';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            errorEl.classList.remove('show');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('content', content);
+                if (!isLogin) {
+                    formData.append('nickname', document.getElementById('nickname').value);
+                    formData.append('email', document.getElementById('email').value);
+                }
+                
+                const res = await fetch('/message', {
+                    method: 'POST',
+                    body: formData,
+                    headers: isLogin ? { 'X-Visitor-Token': currentToken } : {}
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('content').value = '';
+                    // 如果是已审核，直接刷新显示
+                    if (data.status === 'approved') {
+                        location.reload();
+                    }
+                } else {
+                    errorEl.textContent = data.error || '提交失败';
+                    errorEl.classList.add('show');
+                }
+            } catch(err) {
+                errorEl.textContent = '提交失败，请重试';
+                errorEl.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交留言';
+            }
+        });
+
+        // 点击弹窗外部关闭
+        document.getElementById('registerModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+
+        // 检查 cookie 是否有 token
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+        
+        // 显示回复表单
+        function showReplyForm(commentId) {
+            if (!isLogin) {
+                alert('请先注册/登录');
+                document.getElementById('registerModal').classList.add('show');
+                return;
+            }
+            document.getElementById('reply-form-' + commentId).classList.add('show');
+        }
+        
+        // 隐藏回复表单
+        function hideReplyForm(commentId) {
+            document.getElementById('reply-form-' + commentId).classList.remove('show');
+            document.getElementById('reply-content-' + commentId).value = '';
+        }
+        
+        // 提交回复
+        async function submitReply(parentId) {
+            const content = document.getElementById('reply-content-' + parentId).value.trim();
+            if (!content) {
+                alert('请输入回复内容');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('parent_id', parentId);
+                
+                const res = await fetch('/message', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Visitor-Token': currentToken }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    hideReplyForm(parentId);
+                    if (data.status === 'approved') {
+                        location.reload();
+                    }
+                } else {
+                    alert(data.error || '提交失败');
+                }
+            } catch(err) {
+                alert('提交失败，请重试');
+            }
+        }
+
+        // 页面加载
+        checkVisitor();
     </script>
 </body>
 </html>

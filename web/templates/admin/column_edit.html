@@ -12,7 +12,7 @@
         .card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; }
         .btn { padding: 12px 24px; background: #667eea; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
@@ -25,22 +25,10 @@
         <div class="card">
             <form id="columnForm">
                 <input type="hidden" name="id" value="{{.column.ID}}">
+                <input type="hidden" name="slug" value="">
                 <div class="form-group">
                     <label>名称</label>
-                    <input type="text" name="name" value="{{.column.Name}}" required>
-                </div>
-                <div class="form-group">
-                    <label>Slug</label>
-                    <input type="text" name="slug" value="{{.column.Slug}}">
-                </div>
-                <div class="form-group">
-                    <label>父级专栏</label>
-                    <select name="parent_id">
-                        <option value="0">无</option>
-                        {{range .parents}}
-                        <option value="{{.ID}}" {{if eq .ID $.column.ParentID}}selected{{end}}>{{.Name}}</option>
-                        {{end}}
-                    </select>
+                    <input type="text" name="name" value="{{.column.Name}}" required oninput="autoGenerateSlug(this.value)">
                 </div>
                 <div class="form-group">
                     <label>描述</label>
@@ -54,5 +42,43 @@
             </form>
         </div>
     </div>
+    <script>
+        // 自动生成 slug
+        function autoGenerateSlug(name) {
+            if (!name) return;
+            let slug = name.toLowerCase()
+                .replace(/[^\w\u4e00-\u9fa5]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            document.querySelector('input[name="slug"]').value = slug;
+        }
+        
+        // 初始化时如果有名称则生成 slug
+        window.onload = function() {
+            const name = document.querySelector('input[name="name"]').value;
+            if (name && !document.querySelector('input[name="slug"]').value) {
+                autoGenerateSlug(name);
+            }
+        };
+        
+        document.getElementById('columnForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/admin/columns/save', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('保存成功');
+                    window.location.href = '/admin/columns';
+                } else {
+                    alert('错误: ' + (data.error || '保存失败'));
+                }
+            })
+            .catch(err => alert('请求失败'));
+        });
+    </script>
 </body>
 </html>

@@ -47,12 +47,9 @@ func (h *ColumnHandler) Edit(c *gin.Context) {
 		column = &model.Column{}
 	}
 
-	parents, _ := h.columnService.GetParents()
-
 	c.HTML(http.StatusOK, "column_edit.html", gin.H{
-		"title":   "编辑专栏",
-		"column":  column,
-		"parents": parents,
+		"title":  "编辑专栏",
+		"column": column,
 	})
 }
 
@@ -62,14 +59,17 @@ func (h *ColumnHandler) Save(c *gin.Context) {
 	name := c.PostForm("name")
 	slug := c.PostForm("slug")
 	description := c.PostForm("description")
-	parentID, _ := strconv.ParseUint(c.PostForm("parent_id"), 10, 32)
 	sort, _ := strconv.Atoi(c.PostForm("sort"))
+
+	// 如果 slug 为空，自动生成
+	if slug == "" {
+		slug = generateColumnSlug(name)
+	}
 
 	column := &model.Column{
 		Name:        name,
 		Slug:        slug,
 		Description: description,
-		ParentID:    uint(parentID),
 		Sort:        sort,
 	}
 
@@ -87,6 +87,41 @@ func (h *ColumnHandler) Save(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "id": column.ID})
+}
+
+// generateColumnSlug 根据名称自动生成 slug
+func generateColumnSlug(name string) string {
+	if name == "" {
+		return ""
+	}
+	var result []rune
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+			result = append(result, r)
+		} else if r == ' ' || r == '-' || r == '_' {
+			if len(result) > 0 && result[len(result)-1] != '-' {
+				result = append(result, '-')
+			}
+		}
+	}
+	slug := string(result)
+	// 移除开头和结尾的短横线
+	for len(slug) > 0 && slug[0] == '-' {
+		slug = slug[1:]
+	}
+	for len(slug) > 0 && slug[len(slug)-1] == '-' {
+		slug = slug[:len(slug)-1]
+	}
+	// 转为小写
+	var lower []rune
+	for _, r := range slug {
+		if r >= 'A' && r <= 'Z' {
+			lower = append(lower, r+32)
+		} else {
+			lower = append(lower, r)
+		}
+	}
+	return string(lower)
 }
 
 // Delete 删除专栏

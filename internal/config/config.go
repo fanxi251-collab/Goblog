@@ -13,6 +13,7 @@ type Config struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	Upload   UploadConfig   `mapstructure:"upload"`
 	XSS      XSSConfig      `mapstructure:"xss"`
+	Comment  CommentConfig  `mapstructure:"comment"`
 }
 
 // ServerConfig 服务器配置
@@ -43,6 +44,13 @@ type UploadConfig struct {
 // XSSConfig XSS清洗配置
 type XSSConfig struct {
 	Enabled bool `mapstructure:"enabled"`
+}
+
+// CommentConfig 评论/留言配置
+type CommentConfig struct {
+	RateLimit    int      `mapstructure:"rate_limit"`    // 频率限制（秒）
+	AutoApprove  bool     `mapstructure:"auto_approve"`  // 是否自动审核通过
+	BlockedWords []string `mapstructure:"blocked_words"` // 敏感词列表
 }
 
 var globalConfig *Config

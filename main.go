@@ -6,9 +6,9 @@ import (
 	"Goblog/internal/repository"
 	"Goblog/internal/router"
 	"Goblog/internal/service"
-	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
@@ -27,15 +27,8 @@ func main() {
 
 	// 2. 创建数据库目录
 	dbPath := cfg.Database.Path
-	dirIndex := 0
-	for i := len(dbPath) - 1; i >= 0; i-- {
-		if dbPath[i] == '/' || dbPath[i] == '\\' {
-			dirIndex = i
-			break
-		}
-	}
-	if dirIndex > 0 {
-		if err := os.MkdirAll(dbPath[:dirIndex], 0755); err != nil {
+	if dir := filepath.Dir(dbPath); dir != "." && dir != "" {
+		if err := os.MkdirAll(dir, 0755); err != nil {
 			log.Printf("创建数据库目录失败: %v", err)
 		}
 	}
@@ -52,6 +45,9 @@ func main() {
 		&model.Column{},
 		&model.Post{},
 		&model.Comment{},
+		&model.Visitor{},
+		&model.PostLike{},
+		&model.Devlog{},
 	); err != nil {
 		log.Fatalf("数据库迁移失败: %v", err)
 	}
@@ -73,18 +69,24 @@ func main() {
 	postRepo := repository.NewPostRepository(db)
 	columnRepo := repository.NewColumnRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
+	visitorRepo := repository.NewVisitorRepository(db)
+	postLikeRepo := repository.NewPostLikeRepository(db)
+	devlogRepo := repository.NewDevlogRepository(db)
 
 	// 7. 初始化Service层
 	postService := service.NewPostService(postRepo)
 	columnService := service.NewColumnService(columnRepo)
 	commentService := service.NewCommentService(commentRepo)
+	visitorService := service.NewVisitorService(visitorRepo, commentRepo)
+	postLikeService := service.NewPostLikeService(postLikeRepo, postRepo)
+	devlogService := service.NewDevlogService(devlogRepo)
 	fileService := service.NewLocalFileService()
 
 	// 8. 创建Gin引擎
 	engine := gin.Default()
 
 	// 配置路由
-	router.Setup(engine, postService, columnService, commentService, fileService)
+	router.Setup(engine, postService, columnService, commentService, visitorService, postLikeService, fileService, devlogService)
 
 	// 9. 启动服务
 	addr := cfg.Address()
@@ -94,5 +96,5 @@ func main() {
 	}
 
 	// 防止编译提前退出
-	fmt.Println("按Ctrl+C停止服务")
+	log.Println("按 Ctrl+C 停止服务")
 }
