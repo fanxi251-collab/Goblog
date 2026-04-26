@@ -7,8 +7,9 @@
 
 <img width="1876" height="942" alt="image" src="https://github.com/user-attachments/assets/9e1d491e-3c2c-41f7-bf5b-6e9c8f824982" />
 
+专栏界面
 <img width="1903" height="937" alt="image" src="https://github.com/user-attachments/assets/71364c5b-fa95-4b91-98dd-873975c3110c" />
-
+开发日志界面
 <img width="1913" height="917" alt="image" src="https://github.com/user-attachments/assets/9e0c827e-dbe4-4b2c-a530-91111136d5d6" />
-
+留言板界面
 <img width="1903" height="941" alt="image" src="https://github.com/user-attachments/assets/d66d277e-7157-4ab4-a28c-24e16961a8fc" />
