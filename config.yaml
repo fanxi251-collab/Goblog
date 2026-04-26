@@ -5,9 +5,9 @@ server:
 
 # 后台配置
 admin:
-  path: "/admin"                # 后台路径（可自定义）
-  username: "admin"           # 初始用户名
-  password: "admin123"       # 初始密码（生产环境请修改）
+  path: "/admin-panel-7x9k2m3p"   # 后台路径（复杂随机路径）
+  username: "Fantasy"              # 初始用户名
+  password: "746834335"            # 初始密码（生产环境请修改）
 
 # 数据库配置
 database:

@@ -150,9 +150,6 @@ func Setup(
 	// 设置HTML模板（后台+前台）
 	engine.LoadHTMLGlob("./web/templates/**/*.html")
 
-	// 重新设置模板函数（确保在模板加载后生效）
-	SetupTemplateFunctions(engine)
-
 	// ============ 前台路由 ============
 	// 搜索API - 放在前面避免被其他路由匹配
 	engine.GET("/api/search", homeHandler.Search)
@@ -254,4 +251,17 @@ func Setup(
 
 	// 设置静态文件
 	engine.Static("/static", "./web/static")
+	
+	// 调试：检查配置
+	engine.GET("/debug/config", func(c *gin.Context) {
+		cfg := config.Get()
+		if cfg == nil {
+			c.JSON(200, gin.H{"error": "config is nil"})
+			return
+		}
+		c.JSON(200, gin.H{
+			"admin_path": cfg.Admin.Path,
+			"admin_username": cfg.Admin.Username,
+		})
+	})
 }

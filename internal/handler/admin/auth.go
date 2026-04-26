@@ -18,8 +18,10 @@ func NewAuthHandler() *AuthHandler {
 
 // LoginPage 登录页面（GET）
 func (h *AuthHandler) LoginPage(c *gin.Context) {
+	cfg := config.Get()
 	c.HTML(http.StatusOK, "login.html", gin.H{
-		"title": "登录",
+		"title":      "登录",
+		"adminPath": cfg.Admin.Path,
 	})
 }
 
@@ -38,38 +40,41 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	if username == cfg.Admin.Username && password == cfg.Admin.Password {
 		// 登录成功，设置Cookie
-		c.SetCookie("admin_session", username, 86400, "/admin", "", false, true)
-		// 返回重定向
-		c.Header("Location", "/admin/")
-		c.Status(302)
+		c.SetCookie("admin_session", username, 86400, cfg.Admin.Path, "", false, true)
+		// 返回重定向到后台首页
+		c.Redirect(http.StatusFound, cfg.Admin.Path+"/")
 		return
 	}
 
 	// 登录失败 - 需要手动设置状态
 	c.Status(200)
 	c.HTML(200, "login.html", gin.H{
-		"title": "登录",
-		"error": "用户名或密码错误",
+		"title":      "登录",
+		"adminPath":  cfg.Admin.Path,
+		"error":     "用户名或密码错误",
 	})
 }
 
 // Logout 登出
 func (h *AuthHandler) Logout(c *gin.Context) {
+	cfg := config.Get()
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:   "admin_session",
 		Value:  "",
-		Path:   "/admin",
+		Path:   cfg.Admin.Path,
 		MaxAge: -1,
 	})
-	c.Redirect(http.StatusFound, "/admin/login")
+	c.Redirect(http.StatusFound, cfg.Admin.Path+"/login")
 }
 
 // AuthRequired 检查是否已登录
 func (h *AuthHandler) AuthRequired() gin.HandlerFunc {
+	cfg := config.Get()
+	loginURL := cfg.Admin.Path + "/login"
 	return func(c *gin.Context) {
 		cookie, err := c.Request.Cookie("admin_session")
 		if err != nil || cookie == nil || cookie.Value == "" {
-			c.Redirect(http.StatusFound, "/admin/login")
+			c.Redirect(http.StatusFound, loginURL)
 			c.Abort()
 			return
 		}

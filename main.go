@@ -22,6 +22,10 @@ func main() {
 		log.Fatalf("加载配置失败: %v", err)
 	}
 
+	// 调试：打印配置
+	log.Printf("后台路径: %s", cfg.Admin.Path)
+	log.Printf("后台用户名: %s", cfg.Admin.Username)
+
 	// 设置XSS开关
 	model.SetXSSEnabled(cfg.XSS.Enabled)
 

@@ -91,7 +91,7 @@
         {{if .error}}
         <div class="error-message">{{.error}}</div>
         {{end}}
-        <form method="POST" action="/admin/login">
+        <form method="POST" action="{{.adminPath}}/login">
             <div class="form-group">
                 <label>用户名</label>
                 <input type="text" name="username" required autofocus>
