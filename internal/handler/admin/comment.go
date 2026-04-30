@@ -71,6 +71,7 @@ func (h *CommentHandler) List(c *gin.Context) {
 		"total":       total,
 		"status":      status,
 		"commentType": "message",
+		"adminPath":   c.GetString("adminPath"),
 	})
 }
 
@@ -125,6 +126,7 @@ func (h *CommentHandler) ArticleComments(c *gin.Context) {
 		"total":       total,
 		"status":      status,
 		"commentType": "article",
+		"adminPath":   c.GetString("adminPath"),
 	})
 }
 

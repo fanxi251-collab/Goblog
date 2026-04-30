@@ -27,8 +27,9 @@ func (h *ColumnHandler) List(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "column_list.html", gin.H{
-		"title":   "专栏管理",
-		"columns": columns,
+		"title":     "专栏管理",
+		"columns":   columns,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 
@@ -48,8 +49,9 @@ func (h *ColumnHandler) Edit(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "column_edit.html", gin.H{
-		"title":  "编辑专栏",
-		"column": column,
+		"title":     "编辑专栏",
+		"column":    column,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 

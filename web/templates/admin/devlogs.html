@@ -29,13 +29,13 @@
     <div class="header">
         <h1>开发日志</h1>
         <nav>
-            <a href="/admin/">仪表盘</a>
-            <a href="/admin/posts">文章</a>
+            <a href="{{.adminPath}}/">仪表盘</a>
+            <a href="{{.adminPath}}/posts">文章</a>
         </nav>
     </div>
     <div class="container">
         <div class="card">
-            <a href="/admin/devlogs/new" class="btn">新建日志</a>
+            <a href="{{.adminPath}}/devlogs/new" class="btn">新建日志</a>
             <table class="table">
                 <thead>
                     <tr>
@@ -62,7 +62,7 @@
                             {{end}}
                         </td>
                         <td>
-                            <a href="/admin/devlogs/{{.ID}}" class="btn">编辑</a>
+                            <a href="{{.adminPath}}/devlogs/{{.ID}}" class="btn">编辑</a>
                             {{if .IsPublished}}
                                 <button onclick="unpublishDevlog({{.ID}})" class="btn btn-warning">下架</button>
                             {{else}}

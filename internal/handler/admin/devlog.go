@@ -40,6 +40,7 @@ func (h *DevlogHandler) List(c *gin.Context) {
 		"page":       page,
 		"totalPages": totalPages,
 		"total":      total,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 
@@ -69,9 +70,10 @@ func (h *DevlogHandler) Edit(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "devlog_edit.html", gin.H{
-		"title":  "编辑日志 - 灵序之夏",
-		"devlog": devlog,
-		"isNew":  isNew,
+		"title":     "编辑日志 - 灵序之夏",
+		"devlog":    devlog,
+		"isNew":     isNew,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 

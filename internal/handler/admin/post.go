@@ -55,6 +55,7 @@ func (h *PostHandler) List(c *gin.Context) {
 		"totalPages": totalPages,
 		"total":      total,
 		"keyword":    keyword,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 
@@ -89,6 +90,7 @@ func (h *PostHandler) Drafts(c *gin.Context) {
 		"totalPages": totalPages,
 		"total":      total,
 		"keyword":    keyword,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 
@@ -113,9 +115,10 @@ func (h *PostHandler) Edit(c *gin.Context) {
 	columns, _ := h.columnService.GetAll()
 
 	c.HTML(http.StatusOK, "post_edit.html", gin.H{
-		"title":   "编辑文章",
-		"post":    post,
-		"columns": columns,
+		"title":     "编辑文章",
+		"post":      post,
+		"columns":   columns,
+		"adminPath": c.GetString("adminPath"),
 	})
 }
 

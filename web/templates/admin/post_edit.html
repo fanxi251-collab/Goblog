@@ -81,10 +81,10 @@
     <div class="header">
         <h1>编辑文章</h1>
         <nav>
-            <a href="/admin/">仪表盘</a>
-            <a href="/admin/posts">文章管理</a>
-            <a href="/admin/drafts">草稿箱</a>
-            <a href="/admin/posts/new">写文章</a>
+            <a href="{{.adminPath}}/">仪表盘</a>
+            <a href="{{.adminPath}}/posts">文章管理</a>
+            <a href="{{.adminPath}}/drafts">草稿箱</a>
+            <a href="{{.adminPath}}/posts/new">写文章</a>
         </nav>
     </div>
     <div class="container">
@@ -152,7 +152,7 @@
                 <div class="btn-group">
                     <button type="button" onclick="submitPost('publish')" class="btn btn-primary">直接发布</button>
                     <button type="button" onclick="submitPost('draft')" class="btn btn-success">保存草稿</button>
-                    <a href="/admin/posts" class="btn btn-secondary">取消</a>
+                    <a href="{{.adminPath}}/posts" class="btn btn-secondary">取消</a>
                 </div>
             </form>
         </div>

@@ -11,8 +11,13 @@ admin:
 
 # 数据库配置
 database:
-  type: "sqlite"
-  path: "data/goblog.db"
+  type: "postgres"
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "523"
+  dbname: "blog"
+  sslmode: "disable"
 
 # 文件上传配置
 upload:

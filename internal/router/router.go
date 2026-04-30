@@ -150,6 +150,12 @@ func Setup(
 	// 设置HTML模板（后台+前台）
 	engine.LoadHTMLGlob("./web/templates/**/*.html")
 
+	// 设置后台路径到 Gin context，供模板使用
+	engine.Use(func(c *gin.Context) {
+		c.Set("adminPath", adminPath)
+		c.Next()
+	})
+
 	// ============ 前台路由 ============
 	// 搜索API - 放在前面避免被其他路由匹配
 	engine.GET("/api/search", homeHandler.Search)
@@ -198,6 +204,7 @@ func Setup(
 				"PostsTotal":   postsTotal,
 				"ColumnsTotal": len(columns),
 				"CommentTotal": commentsTotal,
+				"adminPath":  adminPath,
 			})
 		})
 

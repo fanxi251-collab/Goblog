@@ -6,8 +6,32 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; }
-        .header { background: #87CEEB; color: #fff; padding: 20px 40px; }
-        .header a { color: #fff; text-decoration: none; margin-right: 20px; }
+        
+        /* 导航栏 - 固定顶部 */
+        .header {
+            background: #87CEEB;
+            color: #fff;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header .nav { display: flex; gap: 32px; }
+        .header .nav a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .header .nav a:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .btn { padding: 8px 16px; background: #667eea; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; }
@@ -21,13 +45,20 @@
     </style>
 </head>
 <body>
+    <script>
+        var adminPath = '{{.adminPath}}';
+    </script>
     <div class="header">
         <h1>文章管理</h1>
-        <nav>
-            <a href="/admin/">仪表盘</a>
-            <a href="/admin/posts">文章管理</a>
-            <a href="/admin/drafts">草稿箱</a>
-            <a href="/admin/posts/new">写文章</a>
+        <nav class="nav">
+            <a href="{{.adminPath}}/">仪表盘</a>
+            <a href="{{.adminPath}}/posts">文章</a>
+            <a href="{{.adminPath}}/drafts">草稿箱</a>
+            <a href="{{.adminPath}}/columns">专栏</a>
+            <a href="{{.adminPath}}/comments">留言</a>
+            <a href="{{.adminPath}}/article-comments">文章评论</a>
+            <a href="{{.adminPath}}/devlogs">开发日志</a>
+            <a href="{{.adminPath}}/logout">退出</a>
         </nav>
     </div>
     <div class="container">
@@ -39,7 +70,7 @@
                 <input type="text" name="keyword" value="{{.keyword}}" placeholder="搜索文章标题或内容..." style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
                 <button type="submit" class="btn">搜索</button>
                 {{if .keyword}}
-                <a href="/admin/posts" class="btn" style="background: #6c757d;">清除</a>
+                <a href="{{.adminPath}}/posts" class="btn" style="background: #6c757d;">清除</a>
                 {{end}}
             </form>
             
@@ -55,7 +86,7 @@
                         <td>{{.Title}}</td>
                         <td>{{.Status}}</td>
                         <td class="actions">
-                            <a href="/admin/posts/{{.ID}}" class="btn">编辑</a>
+                            <a href="{{$.adminPath}}/posts/{{.ID}}" class="btn">编辑</a>
                             <button onclick="deletePost({{.ID}}, '{{.Title}}')" class="btn btn-danger">删除</button>
                         </td>
                     </tr>
@@ -69,7 +100,7 @@
             if (!confirm('确定要删除文章 "' + title + '" 吗？此操作不可恢复。')) {
                 return;
             }
-            fetch('/admin/posts/' + id, { method: 'DELETE' })
+            fetch(adminPath + '/posts/' + id, { method: 'DELETE' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {

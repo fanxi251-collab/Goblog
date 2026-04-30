@@ -6,9 +6,32 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; background: #f5f5f5; }
-        .header { background: #87CEEB; color: #fff; padding: 20px 40px; }
-        .header h1 { font-size: 20px; }
-        .header a { color: #fff; text-decoration: none; margin-left: 20px; }
+        
+        /* 导航栏 - 固定顶部 */
+        .header {
+            background: #87CEEB;
+            color: #fff;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header .nav { display: flex; gap: 32px; }
+        .header .nav a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .header .nav a:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .btn { padding: 8px 16px; background: #667eea; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; }
@@ -24,10 +47,15 @@
 <body>
     <div class="header">
         <h1>草稿箱</h1>
-        <nav>
-            <a href="/admin/">仪表盘</a>
-            <a href="/admin/posts">文章管理</a>
-            <a href="/admin/drafts">草稿箱</a>
+        <nav class="nav">
+            <a href="{{.adminPath}}/">仪表盘</a>
+            <a href="{{.adminPath}}/posts">文章</a>
+            <a href="{{.adminPath}}/drafts">草稿箱</a>
+            <a href="{{.adminPath}}/columns">专栏</a>
+            <a href="{{.adminPath}}/comments">留言</a>
+            <a href="{{.adminPath}}/article-comments">文章评论</a>
+            <a href="{{.adminPath}}/devlogs">开发日志</a>
+            <a href="{{.adminPath}}/logout">退出</a>
         </nav>
     </div>
     <div class="container">
@@ -43,7 +71,7 @@
                         <td>{{.ID}}</td>
                         <td>{{.Title}}</td>
                         <td class="actions">
-                            <a href="/admin/posts/{{.ID}}" class="btn">编辑</a>
+                            <a href="{{.adminPath}}/posts/{{.ID}}" class="btn">编辑</a>
                             <button onclick="deletePost({{.ID}}, '{{.Title}}')" class="btn btn-danger">删除</button>
                         </td>
                     </tr>

@@ -41,19 +41,19 @@
     <div class="header">
         <h1>文章评论管理</h1>
         <nav>
-            <a href="/admin/">仪表盘</a>
-            <a href="/admin/posts">文章</a>
-            <a href="/admin/columns">专栏</a>
-            <a href="/admin/comments">留言</a>
+            <a href="{{.adminPath}}/">仪表盘</a>
+            <a href="{{.adminPath}}/posts">文章</a>
+            <a href="{{.adminPath}}/columns">专栏</a>
+            <a href="{{.adminPath}}/comments">留言</a>
         </nav>
     </div>
     <div class="container">
         <div class="card">
             <div class="tabs">
-                <a href="/admin/article-comments?status=pending" {{if eq .status "pending"}}class="active"{{end}}>待审核</a>
-                <a href="/admin/article-comments?status=approved" {{if eq .status "approved"}}class="active"{{end}}>已通过</a>
-                <a href="/admin/article-comments?status=rejected" {{if eq .status "rejected"}}class="active"{{end}}>已拒绝</a>
-                <a href="/admin/article-comments?status=" {{if eq .status ""}}class="active"{{end}}>全部</a>
+                <a href="{{.adminPath}}/article-comments?status=pending" {{if eq .status "pending"}}class="active"{{end}}>待审核</a>
+                <a href="{{.adminPath}}/article-comments?status=approved" {{if eq .status "approved"}}class="active"{{end}}>已通过</a>
+                <a href="{{.adminPath}}/article-comments?status=rejected" {{if eq .status "rejected"}}class="active"{{end}}>已拒绝</a>
+                <a href="{{.adminPath}}/article-comments?status=" {{if eq .status ""}}class="active"{{end}}>全部</a>
             </div>
             
             <div class="toolbar">
@@ -107,7 +107,7 @@
             {{if gt .totalPages 1}}
             <div class="pagination">
                 {{range seq .totalPages}}
-                <a href="/admin/article-comments?page={{.}}&status={{.status}}" {{if eq .page $.page}}class="active"{{end}}>{{.}}</a>
+                <a href="{{.adminPath}}/article-comments?page={{.}}&status={{.status}}" {{if eq .page $.page}}class="active"{{end}}>{{.}}</a>
                 {{end}}
             </div>
             {{end}}
