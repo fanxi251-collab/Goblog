@@ -78,6 +78,7 @@
     </style>
 </head>
 <body>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>编辑文章</h1>
         <nav>
@@ -185,7 +186,7 @@
             const formData = new FormData();
             formData.append('file', file);
             
-            fetch('/admin/upload', {
+            fetch(adminPath + '/upload', {
                 method: 'POST',
                 body: formData
             })
@@ -220,7 +221,7 @@
             formData.append('file', file);
             formData.append('post_id', postID);
             
-            fetch('/admin/upload/cover', {
+            fetch(adminPath + '/upload/cover', {
                 method: 'POST',
                 body: formData
             })
@@ -250,7 +251,7 @@
             const messageEl = document.getElementById('message');
             messageEl.style.display = 'none';
             
-            fetch('/admin/posts/save', {
+            fetch(adminPath + '/posts/save', {
                 method: 'POST',
                 body: formData
             })
@@ -274,7 +275,7 @@
                     // 保存后不跳转，用户可以继续上传封面
                     if (action === 'publish') {
                         setTimeout(() => {
-                            window.location.href = '/admin/posts';
+                            window.location.href = adminPath + '/posts';
                         }, 1500);
                     }
                 } else {
@@ -294,3 +295,4 @@
     </script>
 </body>
 </html>
+

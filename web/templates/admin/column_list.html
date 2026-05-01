@@ -45,6 +45,7 @@
     </style>
 </head>
 <body>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>专栏管理</h1>
         <nav class="nav">
@@ -72,6 +73,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {{$adminPath := .adminPath}}
                     {{range .columns}}
                     <tr>
                         <td>{{.ID}}</td>
@@ -79,7 +81,8 @@
                         <td>{{.Slug}}</td>
                         <td>{{.Description}}</td>
                         <td>
-                            <a href="{{.adminPath}}/columns/{{.ID}}" class="btn">编辑</a>
+                            <a href="{{$adminPath}}/columns/{{.ID}}" class="btn">编辑</a>
+                            <button onclick="deleteColumn({{.ID}})" class="btn btn-danger">删除</button>
                         </td>
                     </tr>
                     {{end}}
@@ -87,5 +90,22 @@
             </table>
         </div>
     </div>
+    <script>
+        async function deleteColumn(id) {
+            if (!confirm('确定要删除这个专栏吗？')) return;
+            try {
+                const res = await fetch(adminPath + '/columns/' + id, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    alert('删除成功');
+                    location.reload();
+                } else {
+                    alert('删除失败: ' + (data.error || '未知错误'));
+                }
+            } catch (err) {
+                alert('请求失败: ' + err);
+            }
+        }
+    </script>
 </body>
 </html>

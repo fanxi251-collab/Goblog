@@ -23,9 +23,9 @@
         .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
         .status-badge.published { background: #d4edda; color: #155724; }
         .status-badge.draft { background: #fff3cd; color: #856404; }
-    </style>
-</head>
+</style>
 <body>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>开发日志</h1>
         <nav>
@@ -79,7 +79,7 @@
     <script>
         function deleteDevlog(id) {
             if (!confirm('确定要删除这条日志吗？')) return;
-            fetch('/admin/devlogs/' + id, { method: 'DELETE' })
+            fetch(adminPath + '/devlogs/' + id, { method: 'DELETE' })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (data.success) {
@@ -91,7 +91,7 @@
         }
 
         function publishDevlog(id) {
-            fetch('/admin/devlogs/' + id + '/publish', { method: 'POST' })
+            fetch(adminPath + '/devlogs/' + id + '/publish', { method: 'POST' })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (data.success) {
@@ -103,7 +103,7 @@
         }
 
         function unpublishDevlog(id) {
-            fetch('/admin/devlogs/' + id + '/unpublish', { method: 'POST' })
+            fetch(adminPath + '/devlogs/' + id + '/unpublish', { method: 'POST' })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (data.success) {
@@ -116,3 +116,4 @@
     </script>
 </body>
 </html>
+

@@ -26,6 +26,7 @@
     </style>
 </head>
 <body>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>{{if .isNew}}新建日志{{else}}编辑日志{{end}}</h1>
         <a href="{{.adminPath}}/devlogs">日志列表</a>
@@ -76,14 +77,14 @@
         document.getElementById('devlogForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('/admin/devlogs/save', {
+            fetch(adminPath + '/devlogs/save', {
                 method: 'POST',
                 body: formData
             })
             .then(function(res) { return res.text(); })
             .then(function(data) {
                 // 保存成功，跳转到列表页
-                window.location.href = '/admin/devlogs';
+                window.location.href = adminPath + '/devlogs';
             })
             .catch(function(err) {
                 alert('请求失败: ' + err);
@@ -92,7 +93,7 @@
 
         function publishDevlog() {
             const id = {{.devlog.ID}};
-            fetch('/admin/devlogs/' + id + '/publish', { method: 'POST' })
+            fetch(adminPath + '/devlogs/' + id + '/publish', { method: 'POST' })
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.success) {
@@ -109,7 +110,7 @@
 
         function unpublishDevlog() {
             const id = {{.devlog.ID}};
-            fetch('/admin/devlogs/' + id + '/unpublish', { method: 'POST' })
+            fetch(adminPath + '/devlogs/' + id + '/unpublish', { method: 'POST' })
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.success) {
@@ -126,3 +127,4 @@
     </script>
 </body>
 </html>
+

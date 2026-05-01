@@ -42,12 +42,10 @@
         .actions { display: flex; gap: 10px; }
         .message { padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
         .message.success { background: #d4edda; color: #155724; display: block; }
-    </style>
+</style>
 </head>
 <body>
-    <script>
-        var adminPath = '{{.adminPath}}';
-    </script>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>文章管理</h1>
         <nav class="nav">
@@ -66,7 +64,7 @@
             <div id="message" class="message"></div>
             
             <!-- 搜索框 -->
-            <form method="get" action="/admin/posts" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <form method="get" action="{{.adminPath}}/posts" style="margin-bottom: 20px; display: flex; gap: 10px;">
                 <input type="text" name="keyword" value="{{.keyword}}" placeholder="搜索文章标题或内容..." style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
                 <button type="submit" class="btn">搜索</button>
                 {{if .keyword}}

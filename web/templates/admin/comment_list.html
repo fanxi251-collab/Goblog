@@ -59,6 +59,7 @@
     </style>
 </head>
 <body>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>留言管理</h1>
         <nav class="nav">
@@ -83,8 +84,8 @@
             </div>
             
             <div class="toolbar">
-                <button class="btn btn-success" onclick="batchAction('/admin/comments/batch-approve', '审核通过')">批量通过</button>
-                <button class="btn btn-danger" onclick="batchAction('/admin/comments/batch-reject', '批量拒绝')">批量拒绝</button>
+                <button class="btn btn-success" onclick="batchAction(adminPath + '/comments/batch-approve', '审核通过')">批量通过</button>
+                <button class="btn btn-danger" onclick="batchAction(adminPath + '/comments/batch-reject', '批量拒绝')">批量拒绝</button>
             </div>
 
             <table class="table">
@@ -153,7 +154,7 @@
         async function action(id, type) {
             if (!confirm('确定要' + (type === 'approve' ? '审核通过' : '拒绝') + '这条评论吗？')) return;
             
-            const url = '/admin/comments/' + id + '/' + type;
+            const url = adminPath + '/comments/' + id + '/' + type;
             try {
                 const res = await fetch(url, { method: 'POST' });
                 const data = await res.json();
@@ -172,7 +173,7 @@
             if (!confirm('确定要删除这条评论吗？此操作不可恢复！')) return;
             
             try {
-                const res = await fetch('/admin/comments/' + id, { method: 'DELETE' });
+                const res = await fetch(adminPath + '/comments/' + id, { method: 'DELETE' });
                 const data = await res.json();
                 if (data.success) {
                     location.reload();
@@ -213,3 +214,4 @@
     </script>
 </body>
 </html>
+

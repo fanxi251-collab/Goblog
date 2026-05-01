@@ -17,6 +17,9 @@
     </style>
 </head>
 <body>
+    <script>
+        var adminPath = '{{.adminPath}}';
+    </script>
     <div class="header">
         <h1>编辑专栏</h1>
         <a href="{{.adminPath}}/columns">专栏列表</a>
@@ -64,7 +67,7 @@
         document.getElementById('columnForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('/admin/columns/save', {
+            fetch(adminPath + '/columns/save', {
                 method: 'POST',
                 body: formData
             })
@@ -72,7 +75,7 @@
             .then(data => {
                 if (data.success) {
                     alert('保存成功');
-                    window.location.href = '/admin/columns';
+                    window.location.href = adminPath + '/columns';
                 } else {
                     alert('错误: ' + (data.error || '保存失败'));
                 }

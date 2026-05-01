@@ -45,6 +45,7 @@
     </style>
 </head>
 <body>
+    <script>var adminPath = '{{.adminPath}}';</script>
     <div class="header">
         <h1>草稿箱</h1>
         <nav class="nav">
@@ -85,7 +86,7 @@
             if (!confirm('确定要删除草稿 "' + title + '" 吗？此操作不可恢复。')) {
                 return;
             }
-            fetch('/admin/posts/' + id, { method: 'DELETE' })
+            fetch(adminPath + '/posts/' + id, { method: 'DELETE' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -101,3 +102,4 @@
     </script>
 </body>
 </html>
+

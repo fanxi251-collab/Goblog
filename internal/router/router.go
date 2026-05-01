@@ -237,7 +237,7 @@ func Setup(
 		adminPrivate.DELETE("/comments/:id", commentHandler.Delete)
 
 		adminPrivate.GET("/columns", columnHandler.List)
-		adminPrivate.GET("/columns_new", columnHandler.Edit)
+		adminPrivate.GET("/columns/new", columnHandler.Edit)
 		adminPrivate.GET("/columns/:id", columnHandler.Edit)
 		adminPrivate.POST("/columns/save", columnHandler.Save)
 		adminPrivate.DELETE("/columns/:id", columnHandler.Delete)
