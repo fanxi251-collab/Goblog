@@ -50,14 +50,24 @@
             input.click();
         }
         
-        function initVditor() {
+function initVditor() {
             window.vditorReady = true;
             console.log('Vditor loaded, initializing...');
             
-            // 使用全局变量存储 Vditor 实例
-            window.vditorInstance = null;
+            // 清理旧的实例（防止残留）
+            if (window.vditorInstance) {
+                try { window.vditorInstance.destroy(); } catch(e) {}
+                window.vditorInstance = null;
+            }
             
-            // 初始化 Vditor（移除内置upload，改用自定义按钮）
+            // 离开页面时清理 Vditor 实例
+            window.addEventListener('beforeunload', function() {
+                if (window.vditorInstance) {
+                    try { window.vditorInstance.destroy(); } catch(e) {}
+                }
+            });
+            
+            // 使用全局变量存储 Vditor 实例
             window.vditorInstance = new Vditor('vditor', {
                 height: 500,
                 mode: 'ir',
