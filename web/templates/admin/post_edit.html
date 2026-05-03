@@ -31,7 +31,9 @@
                 .then(function(data) {
                     console.log('[CUSTOM UPLOAD] Response:', data);
                     
-                    if (data.code === 0 && data.data && data.data.url) {
+                    // 兼容两种响应格式：code:0 或 success:1
+                    var isSuccess = (data.code === 0) || (data.success === 1);
+                    if (isSuccess && data.data && data.data.url) {
                         var md = '![' + data.data.name + '](' + data.data.url + ')';
                         console.log('[CUSTOM UPLOAD] Inserting:', md);
                         window.vditorInstance.insertValue(md);
