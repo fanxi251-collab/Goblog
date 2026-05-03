@@ -32,7 +32,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	cfg := config.Get()
 
-	// 调试
 	if cfg == nil {
 		c.String(500, "config is nil!")
 		return
@@ -46,11 +45,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// 登录失败 - 需要手动设置状态
-	c.Status(200)
-	c.HTML(200, "login.html", gin.H{
-		"title":      "登录",
-		"adminPath":  cfg.Admin.Path,
+	// 登录失败
+	c.HTML(http.StatusUnauthorized, "login.html", gin.H{
+		"title":     "登录",
+		"adminPath": cfg.Admin.Path,
 		"error":     "用户名或密码错误",
 	})
 }
@@ -74,6 +72,12 @@ func (h *AuthHandler) AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cookie, err := c.Request.Cookie("admin_session")
 		if err != nil || cookie == nil || cookie.Value == "" {
+			// 如果是 AJAX 请求，返回 JSON 而不是重定向
+			if c.GetHeader("X-Requested-With") == "XMLHttpRequest" {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+				c.Abort()
+				return
+			}
 			c.Redirect(http.StatusFound, loginURL)
 			c.Abort()
 			return

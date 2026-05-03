@@ -33,16 +33,17 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	// 返回 HTML img 标签（更可靠）
+	// 处理路径
 	path = strings.ReplaceAll(path, "\\", "/")
-	imageURL := "<img src=\"/static/uploads/" + path + "\" alt=\"\">"
+	imageURL := "/static/uploads/" + path
 
+	// 返回 JSON 格式: { code: 0, data: { url: "...", name: "..." } }
 	c.JSON(http.StatusOK, gin.H{
-		"success": 1,
-		"message": "上传成功",
+		"code": 0,
+		"msg": "上传成功",
 		"data": gin.H{
 			"url":  imageURL,
-			"path": path,
+			"name": file.Filename,
 		},
 	})
 }
@@ -55,23 +56,25 @@ func (h *UploadHandler) UploadCover(c *gin.Context) {
 		return
 	}
 
-	// 获取 postID
+	// 获取 postID（可选，新建文章时为0）
 	postIDStr := c.PostForm("post_id")
-	postID, err := strconv.ParseUint(postIDStr, 10, 32)
-	if err != nil || postID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的文章ID"})
-		return
+	postID := uint(0)
+	if postIDStr != "" {
+		id, err := strconv.ParseUint(postIDStr, 10, 32)
+		if err == nil {
+			postID = uint(id)
+		}
 	}
 
-	path, err := h.fileService.UploadCover(file, uint(postID))
+	path, err := h.fileService.UploadCover(file, postID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success": 1,
-		"message": "封面上传成功",
+		"code": 0,
+		"msg":  "封面上传成功",
 		"data": gin.H{
 			"url":  "/static/" + path,
 			"path": path,

@@ -45,49 +45,74 @@
 </style>
 </head>
 <body>
-    <script>var adminPath = '{{.adminPath}}';</script>
-    <div class="header">
-        <h1>文章管理</h1>
-        <nav class="nav">
-            <a href="{{.adminPath}}/">仪表盘</a>
-            <a href="{{.adminPath}}/posts">文章</a>
-            <a href="{{.adminPath}}/drafts">草稿箱</a>
-            <a href="{{.adminPath}}/columns">专栏</a>
-            <a href="{{.adminPath}}/comments">留言</a>
-            <a href="{{.adminPath}}/article-comments">文章评论</a>
-            <a href="{{.adminPath}}/devlogs">开发日志</a>
-            <a href="{{.adminPath}}/logout">退出</a>
-        </nav>
-    </div>
+<script>var adminPath = '{{.adminPath}}';</script>
+    {{template "header" .}}
     <div class="container">
         <div class="card">
             <div id="message" class="message"></div>
             
-            <!-- 搜索框 -->
-            <form method="get" action="{{.adminPath}}/posts" style="margin-bottom: 20px; display: flex; gap: 10px;">
-                <input type="text" name="keyword" value="{{.keyword}}" placeholder="搜索文章标题或内容..." style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
+            <!-- 搜索框 + 专栏筛选 -->
+            <form method="get" action="{{.adminPath}}/posts" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <select name="column_id" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="">全部专栏</option>
+                    {{$selectedID := .columnID}}
+                    {{range .columns}}
+                    <option value="{{.ID}}" {{if eq .ID $selectedID}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+                <input type="text" name="keyword" value="{{.keyword}}" placeholder="搜索文章标题..." style="flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
                 <button type="submit" class="btn">搜索</button>
-                {{if .keyword}}
+                {{if or .keyword (ne .columnID 0)}}
                 <a href="{{.adminPath}}/posts" class="btn" style="background: #6c757d;">清除</a>
                 {{end}}
             </form>
             
+            <!-- 批量操作工具栏 -->
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                <label><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"> 全选</label>
+                <button class="btn" onclick="showMigrateDialog()" style="background: #fd7e14;">迁移到</button>
+            </div>
+            
+            <!-- 迁移弹窗 -->
+            <div id="migrateDialog" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;">
+                    <h3 style="margin-bottom: 20px;">迁移文章到</h3>
+                    <select id="targetColumn" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="">请选择专栏</option>
+                        {{range .columns}}
+                        <option value="{{.ID}}">{{.Name}}</option>
+                        {{end}}
+                    </select>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn" style="background: #6c757d;" onclick="closeMigrateDialog()">取消</button>
+                        <button class="btn" style="background: #fd7e14;" onclick="executeMigrate()">确认迁移</button>
+                    </div>
+                </div>
+            </div>
+            
             <p>共 {{.total}} 篇文章</p>
             <table>
                 <thead>
-                    <tr><th>ID</th><th>标题</th><th>状态</th><th>操作</th></tr>
+                    <tr><th style="width:30px;"><input type="checkbox" id="checkAll" onchange="toggleCheckAll()"></th><th>ID</th><th>专栏</th><th>标题</th><th>状态</th><th>操作</th></tr>
                 </thead>
                 <tbody>
+                    {{if .posts}}
                     {{range .posts}}
                     <tr>
+                        <td><input type="checkbox" class="post-check" value="{{.ID}}"></td>
                         <td>{{.ID}}</td>
+                        <td>{{index $.columnsMap .ColumnID}}</td>
                         <td>{{.Title}}</td>
                         <td>{{.Status}}</td>
                         <td class="actions">
                             <a href="{{$.adminPath}}/posts/{{.ID}}" class="btn">编辑</a>
+                            <button onclick="showMigrateDialog({{.ID}})" class="btn" style="background:#fd7e14;">迁移</button>
                             <button onclick="deletePost({{.ID}}, '{{.Title}}')" class="btn btn-danger">删除</button>
                         </td>
                     </tr>
+                    {{end}}
+                    {{else}}
+                    <tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">暂无可发布的文章</td></tr>
                     {{end}}
                 </tbody>
             </table>
@@ -110,6 +135,88 @@
                 .catch(err => {
                     alert('请求失败');
                 });
+        }
+        
+        // 全选/取消全选
+        function toggleCheckAll() {
+            var checkboxes = document.querySelectorAll('.post-check');
+            var checked = document.getElementById('checkAll').checked;
+            checkboxes.forEach(function(cb) {
+                cb.checked = checked;
+            });
+        }
+        
+        // 获取选中的文章ID
+        function getSelectedIds() {
+            var checkboxes = document.querySelectorAll('.post-check:checked');
+            var ids = [];
+            checkboxes.forEach(function(cb) {
+                ids.push(cb.value);
+            });
+            return ids.join(',');
+        }
+        
+        // 显示迁移弹窗
+        function showMigrateDialog(postId) {
+            var ids = postId ? [postId] : getSelectedIds();
+            if (!postId && ids.length === 0) {
+                alert('请先选择要迁移的文章');
+                return;
+            }
+            document.getElementById('migrateDialog').style.display = 'block';
+            document.getElementById('migrateDialog').dataset.ids = ids;
+        }
+        
+        // 关闭迁移弹窗
+        function closeMigrateDialog() {
+            document.getElementById('migrateDialog').style.display = 'none';
+        }
+        
+        // 执行迁移
+        function executeMigrate() {
+            var columnId = document.getElementById('targetColumn').value;
+            if (!columnId) {
+                alert('请选择目标专栏');
+                return;
+            }
+            var ids = document.getElementById('migrateDialog').dataset.ids;
+            if (!ids) {
+                alert('没有选中文章');
+                return;
+            }
+            
+            var formData = new FormData();
+            formData.append('column_id', columnId);
+            
+            // 判断是单篇还是批量
+            if (ids.indexOf(',') > -1) {
+                // 批量迁移
+                formData.append('ids', ids);
+                fetch(adminPath + '/posts/batch-migrate', { method: 'POST', body: formData })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            alert(data.message);
+                            closeMigrateDialog();
+                            location.reload();
+                        } else {
+                            alert('迁移失败: ' + (data.error || '未知错误'));
+                        }
+                    });
+            } else {
+                // 单篇迁移
+                fetch(adminPath + '/posts/' + ids + '/migrate', { method: 'POST', body: formData })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            alert(data.message);
+                            closeMigrateDialog();
+                            location.reload();
+                        } else {
+                            alert('迁移失败: ' + (data.error || '未知错误'));
+                        }
+                    });
+            }
         }
     </script>
 </body>

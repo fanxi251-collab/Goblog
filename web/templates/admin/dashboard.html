@@ -87,19 +87,25 @@
     </style>
 </head>
 <body>
+    {{define "header"}}
     <div class="header">
         <h1>奇迹之夏后台管理</h1>
         <nav class="nav">
-            <a href="{{.adminPath}}/">仪表盘</a>
-            <a href="{{.adminPath}}/posts">文章</a>
-            <a href="{{.adminPath}}/drafts">草稿箱</a>
+            <a href="{{.adminPath}}/">首页</a>
             <a href="{{.adminPath}}/columns">专栏</a>
+            <a href="{{.adminPath}}/posts/new">文章发布</a>
+            <a href="{{.adminPath}}/drafts">草稿箱</a>
+            <a href="{{.adminPath}}/posts">文章管理</a>
+            <a href="{{.adminPath}}/article-comments">评论</a>
             <a href="{{.adminPath}}/comments">留言</a>
-            <a href="{{.adminPath}}/article-comments">文章评论</a>
             <a href="{{.adminPath}}/devlogs">开发日志</a>
             <a href="{{.adminPath}}/logout">退出</a>
         </nav>
     </div>
+    {{end}}
+    
+    {{template "header" .}}
+    
     <div class="container">
         <div class="stats">
             <div class="stat-card">

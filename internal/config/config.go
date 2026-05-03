@@ -31,8 +31,14 @@ type AdminConfig struct {
 
 // DatabaseConfig 数据库配置
 type DatabaseConfig struct {
-	Type string `mapstructure:"type"`
-	Path string `mapstructure:"path"`
+	Type     string `mapstructure:"type"`      // sqlite 或 postgres
+	Path    string `mapstructure:"path"`      // SQLite 文件路径
+	Host    string `mapstructure:"host"`     // PostgreSQL 主机
+	Port    int    `mapstructure:"port"`     // PostgreSQL 端口
+	User    string `mapstructure:"user"`     // PostgreSQL 用户名
+	Password string `mapstructure:"password"` // PostgreSQL 密码
+	DBName  string `mapstructure:"dbname"`   // PostgreSQL 数据库名
+	SSLMode string `mapstructure:"sslmode"` // PostgreSQL SSL模式
 }
 
 // UploadConfig 文件上传配置
@@ -49,8 +55,9 @@ type XSSConfig struct {
 // CommentConfig 评论/留言配置
 type CommentConfig struct {
 	RateLimit    int      `mapstructure:"rate_limit"`    // 频率限制（秒）
-	AutoApprove  bool     `mapstructure:"auto_approve"`  // 是否自动审核通过
+	AutoApprove  bool     `mapstructure:"auto_approve"` // 是否自动审核通过
 	BlockedWords []string `mapstructure:"blocked_words"` // 敏感词列表
+	AdminEmails  []string `mapstructure:"admin_emails"` // 管理员邮箱（不可注册）
 }
 
 var globalConfig *Config

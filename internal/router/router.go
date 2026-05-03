@@ -2,6 +2,8 @@ package router
 
 import (
 	"html/template"
+	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -103,12 +105,8 @@ func SetupTemplateFunctions(engine *gin.Engine) {
 			if content == "" {
 				return ""
 			}
-			// 恢复：如果渲染失败就返回原始内容
-			html := service.RenderMarkdown(content)
-			if html == "" || html == content {
-				return template.HTML("<pre style='white-space:pre-wrap;font-family:inherit;font-size:inherit;'>" + content + "</pre>")
-			}
-			return template.HTML(html)
+			// 直接返回，服务端已渲染的 Markdown 不需要再次渲染
+			return template.HTML(content)
 		},
 	}
 	engine.SetFuncMap(funcMap)
@@ -160,6 +158,9 @@ func Setup(
 	// 搜索API - 放在前面避免被其他路由匹配
 	engine.GET("/api/search", homeHandler.Search)
 
+	// 文件上传 API - 不需要认证（公共路由）
+	engine.POST("/api/upload", uploadHandler.Upload)
+
 	engine.GET("/", homeHandler.Index)
 	engine.GET("/devlog", devlogHandler.Index)
 	engine.GET("/column", frontColumnHandler.Index)
@@ -170,8 +171,10 @@ func Setup(
 
 	// ============ 访客API ============
 	engine.GET("/api/visitor/check", messageHandler.Check)
+	engine.GET("/api/visitor/check-exist", messageHandler.CheckExist)
 	engine.POST("/api/visitor/register", messageHandler.Register)
 	engine.POST("/api/visitor/update", messageHandler.UpdateInfo)
+	engine.DELETE("/api/visitor/all", messageHandler.DeleteAllVisitors)
 
 	// ============ 评论API ============
 	engine.POST("/api/comment", messageHandler.SubmitPostComment)
@@ -180,12 +183,16 @@ func Setup(
 	engine.POST("/api/post/:id/like", frontPostHandler.Like)
 	engine.GET("/api/post/:id/check-like", frontPostHandler.CheckLike)
 
-	// ============ 后台公开路由（登录/登出）===========
+	// ============ 后台公开路由（登录/登出/上传）===========
 	adminPublic := engine.Group(adminPath)
 	{
 		adminPublic.GET("/login", authHandler.LoginPage)
 		adminPublic.POST("/login", authHandler.Login)
 		adminPublic.GET("/logout", authHandler.Logout)
+		
+		// 文件上传 - 不需要认证（能访问后台就能上传）
+		adminPublic.POST("/upload", uploadHandler.Upload)
+		adminPublic.POST("/upload/cover", uploadHandler.UploadCover)
 	}
 
 	// ============ 第二组：需要认证的路由 ============
@@ -194,19 +201,20 @@ func Setup(
 		// 使用认证中间件
 		adminPrivate.Use(authHandler.AuthRequired())
 
-		// 仪表盘（带统计数据）
-		adminPrivate.GET("/", func(c *gin.Context) {
-			_, postsTotal, _ := postService.GetAll(1, 1)
-			columns, _ := columnService.GetAll()
-			_, commentsTotal, _ := commentService.GetAll(1, 1)
-			c.HTML(200, "dashboard.html", gin.H{
-				"title":        "后台管理",
-				"PostsTotal":   postsTotal,
-				"ColumnsTotal": len(columns),
-				"CommentTotal": commentsTotal,
-				"adminPath":  adminPath,
-			})
+// 仪表盘（带统计数据）
+	adminPrivate.GET("/", func(c *gin.Context) {
+		postsTotal, likesTotal, _, _ := postService.GetStats()
+		columns, _ := columnService.GetAll()
+		_, messageTotal, _ := commentService.GetAll(1, 1)
+		c.HTML(200, "dashboard.html", gin.H{
+			"title":        "后台管理",
+			"PostsTotal":   postsTotal,
+			"LikesTotal":   likesTotal,
+			"ColumnsTotal": len(columns),
+			"CommentTotal": messageTotal,
+			"adminPath":   adminPath,
 		})
+	})
 
 		// 文章管理
 		adminPrivate.GET("/posts", postHandler.List)
@@ -215,6 +223,8 @@ func Setup(
 		adminPrivate.POST("/posts/save", postHandler.Save)
 		adminPrivate.DELETE("/posts/:id", postHandler.Delete)
 		adminPrivate.POST("/posts/:id/publish", postHandler.Publish)
+		adminPrivate.POST("/posts/:id/migrate", postHandler.Migrate)
+		adminPrivate.POST("/posts/batch-migrate", postHandler.BatchMigrate)
 
 		// 草稿箱
 		adminPrivate.GET("/drafts", postHandler.Drafts)
@@ -252,23 +262,12 @@ func Setup(
 		adminPrivate.POST("/devlogs/:id/unpublish", adminDevlogHandler.Unpublish)
 
 		// 文件上传
-		adminPrivate.POST("/upload", uploadHandler.Upload)
-		adminPrivate.POST("/upload/cover", uploadHandler.UploadCover)
 	}
 
-	// 设置静态文件
-	engine.Static("/static", "./web/static")
-	
-	// 调试：检查配置
-	engine.GET("/debug/config", func(c *gin.Context) {
-		cfg := config.Get()
-		if cfg == nil {
-			c.JSON(200, gin.H{"error": "config is nil"})
-			return
-		}
-		c.JSON(200, gin.H{
-			"admin_path": cfg.Admin.Path,
-			"admin_username": cfg.Admin.Username,
-		})
-	})
+	// 设置静态文件 - 使用项目根目录
+	wd, _ := os.Getwd()
+	staticPath := wd + "/web/static"
+
+	log.Printf("[INFO] Static /static mapped to: %s", staticPath)
+	engine.Static("/static", staticPath)
 }

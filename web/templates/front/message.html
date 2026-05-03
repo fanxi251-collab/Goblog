@@ -86,6 +86,11 @@
             width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;
         }
         .form-group textarea { min-height: 120px; resize: vertical; }
+        
+        /* 横向排列的表单行 */
+        .form-row { display: flex; gap: 15px; margin-bottom: 20px; }
+        .form-row .form-group { flex: 1; margin-bottom: 0; }
+        
         .btn {
             padding: 12px 32px; background: #87CEEB;
             color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;
@@ -107,7 +112,11 @@
         /* 弹窗样式 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
         .modal.show { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; position: relative; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; }
+        
+        /* 弹窗内的表单行 */
+        .modal-content .form-row { display: flex; gap: 15px; }
+        .modal-content .form-row .form-group { flex: 1; min-width: 0; }
         
         /* 用户信息栏 */
         .user-info { display: none; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
@@ -129,6 +138,11 @@
         
         .error-msg { color: #dc3545; font-size: 14px; margin-top: 5px; display: none; }
         .error-msg.show { display: block; }
+        
+        /* 头像样式 */
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .avatar-sm { width: 32px; height: 32px; }
+        .avatar-lg { width: 80px; height: 80px; }
     </style>
 </head>
 <body>
@@ -157,20 +171,23 @@
             
             <!-- 已登录用户信息 -->
             <div id="userInfo" class="user-info">
+                <img id="userAvatar" class="avatar" src="" alt="avatar">
                 <span>欢迎，</span><span id="userNickname" style="color: #667eea; font-weight: bold;"></span>
                 <button class="btn btn-sm" onclick="showEditModal()">修改</button>
             </div>
             
             <form id="messageForm">
-                <!-- 未登录时显示输入框 -->
+                <!-- 未登录时显示输入框（横向排列） -->
                 <div id="guestFields">
-                    <div class="form-group">
-                        <label>昵称 *</label>
-                        <input type="text" id="nickname" name="nickname" placeholder="请输入昵称">
-                    </div>
-                    <div class="form-group">
-                        <label>邮箱（选填）</label>
-                        <input type="email" id="email" name="email" placeholder="用于接收回复通知">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>昵称 *</label>
+                            <input type="text" id="nickname" name="nickname" placeholder="请输入昵称">
+                        </div>
+                        <div class="form-group">
+                            <label>邮箱 *</label>
+                            <input type="email" id="email" name="email" placeholder="用于接收回复通知">
+                        </div>
                     </div>
                 </div>
                 
@@ -189,6 +206,7 @@
                 {{range .comments}}
                 <div class="comment" id="comment-{{.ID}}">
                     <div class="comment-header">
+                        <img class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed={{.Nickname}}" alt="avatar">
                         <span class="comment-author">{{.Nickname}}</span>
                         <span class="comment-date">{{formatTime .CreatedAt}}</span>
                     </div>
@@ -235,15 +253,17 @@
     <div id="registerModal" class="modal">
         <div class="modal-content">
             <h3>欢迎留言</h3>
-            <p style="margin-bottom: 20px; color: #666;">请先留下您的昵称（邮箱可选）</p>
+            <p style="margin-bottom: 20px; color: #666;">请先留下您的昵称和邮箱</p>
             <form id="registerForm">
-                <div class="form-group">
-                    <label>昵称 *</label>
-                    <input type="text" id="regNickname" required placeholder="请输入昵称">
-                </div>
-                <div class="form-group">
-                    <label>邮箱（选填）</label>
-                    <input type="email" id="regEmail" placeholder="用于接收回复通知">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>昵称 *</label>
+                        <input type="text" id="regNickname" required placeholder="请输入昵称">
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱 *</label>
+                        <input type="email" id="regEmail" required placeholder="用于接收回复通知">
+                    </div>
                 </div>
                 <div id="regError" class="error-msg"></div>
                 <button type="submit" class="btn" style="width: 100%;">开始留言</button>
@@ -256,13 +276,15 @@
         <div class="modal-content">
             <h3>修改信息</h3>
             <form id="editForm">
-                <div class="form-group">
-                    <label>昵称 *</label>
-                    <input type="text" id="editNickname" required>
-                </div>
-                <div class="form-group">
-                    <label>邮箱（选填）</label>
-                    <input type="email" id="editEmail">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>昵称 *</label>
+                        <input type="text" id="editNickname" required>
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱 *</label>
+                        <input type="email" id="editEmail" required>
+                    </div>
                 </div>
                 <div id="editError" class="error-msg"></div>
                 <button type="submit" class="btn" style="width: 100%;">保存</button>
@@ -286,6 +308,7 @@
                     
                     // 显示用户信息
                     document.getElementById('userInfo').classList.add('show');
+                    document.getElementById('userAvatar').src = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + data.visitor.nickname;
                     document.getElementById('userNickname').textContent = data.visitor.nickname;
                     document.getElementById('nickname').value = data.visitor.nickname;
                     document.getElementById('email').value = data.visitor.email || '';
@@ -301,28 +324,55 @@
             }
         }
 
-        // 注册新访客
+// 注册新访客（直接注册，后端检查唯一性）
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const nickname = document.getElementById('regNickname').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const errorEl = document.getElementById('regError');
+            errorEl.classList.remove('show');
             
             if (!nickname) {
                 errorEl.textContent = '昵称不能为空';
                 errorEl.classList.add('show');
                 return;
             }
+            if (!email) {
+                errorEl.textContent = '邮箱不能为空';
+                errorEl.classList.add('show');
+                return;
+            }
             
+            // 直接注册，后端检查唯一性
             try {
-                const formData = new FormData();
-                formData.append('nickname', nickname);
-                formData.append('email', email);
-                
                 const res = await fetch('/api/visitor/register', {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'nickname=' + encodeURIComponent(nickname) + '&email=' + encodeURIComponent(email)
                 });
+                const data = await res.json();
+                
+                if (data.token) {
+                    localStorage.setItem('visitor_token', data.token);
+                    currentToken = data.token;
+                    isLogin = true;
+                    
+                    document.getElementById('registerModal').classList.remove('show');
+                    document.getElementById('userInfo').classList.add('show');
+                    document.getElementById('userAvatar').src = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + nickname;
+                    document.getElementById('userNickname').textContent = nickname;
+                    document.getElementById('nickname').value = nickname;
+                    document.getElementById('email').value = email;
+                } else {
+                    // 保留输入框内容
+                    errorEl.textContent = data.error || '注册失败';
+                    errorEl.classList.add('show');
+                }
+            } catch(e) {
+                errorEl.textContent = '注册失败，请重试';
+                errorEl.classList.add('show');
+            }
+        });
                 const data = await res.json();
                 
                 if (data.success) {
@@ -332,6 +382,7 @@
                     
                     document.getElementById('registerModal').classList.remove('show');
                     document.getElementById('userInfo').classList.add('show');
+                    document.getElementById('userAvatar').src = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + nickname;
                     document.getElementById('userNickname').textContent = nickname;
                     document.getElementById('nickname').value = nickname;
                     document.getElementById('email').value = email;

@@ -100,16 +100,22 @@ func (s *VisitorService) CheckRateLimit(token, ip string) error {
 	// 检查最后评论时间
 	var lastTime int64 = 0
 
-	// 优先检查Token对应的访客
+	// 优先检查 Token 对应的访客的最后评论时间
 	if token != "" {
-		if visitor, err := s.visitorRepo.GetByToken(token); err == nil {
-			lastTime, _ = s.commentRepo.GetLastCommentTime(visitor.IP)
+		if visitor, err := s.visitorRepo.GetByToken(token); err == nil && visitor != nil {
+			commentTime, _ := s.commentRepo.GetLastCommentTime(visitor.IP)
+			if commentTime > lastTime {
+				lastTime = commentTime
+			}
 		}
 	}
 
-	// 如果没有Token或Token无记录，检查IP
-	if lastTime == 0 {
-		lastTime, _ = s.commentRepo.GetLastCommentTime(ip)
+	// 同时检查当前 IP 的最后评论时间（防止切换网络绕过限制）
+	if ip != "" {
+		ipTime, _ := s.commentRepo.GetLastCommentTime(ip)
+		if ipTime > lastTime {
+			lastTime = ipTime
+		}
 	}
 
 	if lastTime > 0 {
@@ -161,4 +167,31 @@ func (s *VisitorService) ShouldAutoApprove(content string) bool {
 
 	cfg := config.Get()
 	return cfg.Comment.AutoApprove
+}
+
+// CheckNicknameExists 检查昵称是否已存在
+func (s *VisitorService) CheckNicknameExists(nickname string) (bool, error) {
+	return s.visitorRepo.CheckNicknameExists(nickname)
+}
+
+// CheckEmailExists 检查邮箱是否已存在（包含管理员邮箱检查）
+func (s *VisitorService) CheckEmailExists(email string) (bool, error) {
+	if email == "" {
+		return false, nil
+	}
+
+	// 检查是否是管理员邮箱
+	cfg := config.Get()
+	for _, adminEmail := range cfg.Comment.AdminEmails {
+		if email == adminEmail {
+			return true, nil // 管理员邮箱视为已存在
+		}
+	}
+
+	return s.visitorRepo.CheckEmailExists(email)
+}
+
+// DeleteAllVisitors 删除所有访客（测试用）
+func (s *VisitorService) DeleteAllVisitors() error {
+	return s.visitorRepo.DeleteAll()
 }

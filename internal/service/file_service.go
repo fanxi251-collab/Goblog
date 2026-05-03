@@ -2,6 +2,7 @@ package service
 
 import (
 	"Goblog/internal/config"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -148,12 +149,7 @@ func (s *LocalFileService) UploadCover(file *multipart.FileHeader, postID uint) 
 
 // formatPostID 将 postID 格式化为 3 位数字字符串
 func formatPostID(id uint) string {
-	if id < 10 {
-		return "00" + string(rune('0'+id))
-	} else if id < 100 {
-		return "0" + string(rune('0'+id/10)) + string(rune('0'+id%10))
-	}
-	return string(rune('0'+id/100)) + string(rune('0'+id%100/10)) + string(rune('0'+id%10))
+	return fmt.Sprintf("%03d", id)
 }
 
 // DeleteCover 删除封面图片

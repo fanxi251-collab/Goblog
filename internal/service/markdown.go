@@ -8,7 +8,9 @@ import (
 )
 
 var markdownParser = goldmark.New(
-	goldmark.WithExtensions(extension.GFM),
+	goldmark.WithExtensions(
+		extension.GFM,
+	),
 )
 
 // RenderMarkdown 将Markdown渲染为HTML

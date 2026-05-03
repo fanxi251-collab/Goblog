@@ -3,8 +3,12 @@ package admin
 import (
 	"Goblog/internal/model"
 	"Goblog/internal/service"
+	"fmt"
+	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,12 +33,25 @@ func (h *PostHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize := 20
 	keyword := c.Query("keyword")
+	columnID, _ := strconv.ParseUint(c.Query("column_id"), 10, 32)
 
 	var posts []model.Post
 	var total int64
 	var columns, _ = h.columnService.GetAll()
 
-	if keyword != "" {
+	// 调试：打印查询参数
+	log.Printf("[POST-LIST] keyword=%s, columnID=%d", keyword, columnID)
+
+	// 创建专栏ID到名称映射：方便模板显示专栏名称
+	columnsMap := make(map[uint]string)
+	for _, col := range columns {
+		columnsMap[col.ID] = col.Name
+	}
+
+	// 按专栏筛选
+	if columnID > 0 {
+		posts, total, _ = h.postService.GetByColumn(uint(columnID), "published", page, pageSize)
+	} else if keyword != "" {
 		// 搜索模式
 		posts, total, _ = h.postService.Search(keyword, "", page, pageSize)
 	} else {
@@ -42,21 +59,25 @@ func (h *PostHandler) List(c *gin.Context) {
 		posts, total, _ = h.postService.GetByStatus("published", page, pageSize)
 	}
 
+	log.Printf("[POST-LIST] 查询结果: total=%d, posts=%d", total, len(posts))
+
 	totalPages := int(total) / pageSize
 	if int(total)%pageSize > 0 {
 		totalPages++
 	}
 
 	c.HTML(http.StatusOK, "post_list.html", gin.H{
-		"title":      "文章管理",
-		"posts":      posts,
-		"columns":    columns,
-		"page":       page,
-		"totalPages": totalPages,
-		"total":      total,
-		"keyword":    keyword,
-		"adminPath": c.GetString("adminPath"),
-	})
+		"title":       "文章管理",
+		"posts":       posts,
+		"columns":     columns,
+		"columnsMap":  columnsMap,
+		"page":        page,
+		"totalPages":  totalPages,
+		"total":       total,
+		"keyword":     keyword,
+		"columnID":   columnID,
+		"adminPath":  c.GetString("adminPath"),
+})
 }
 
 // Drafts 草稿箱
@@ -202,6 +223,91 @@ func (h *PostHandler) Save(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "id": post.ID})
 }
 
+// Migrate 迁移文章到指定专栏
+func (h *PostHandler) Migrate(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的文章ID"})
+		return
+	}
+
+	columnID, err := strconv.ParseUint(c.PostForm("column_id"), 10, 32)
+	if err != nil || columnID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请选择目标专栏"})
+		return
+	}
+
+	post, err := h.postService.GetByID(uint(id))
+	if err != nil || post == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "文章不存在"})
+		return
+	}
+
+	targetCol, err := h.columnService.GetByID(uint(columnID))
+	if err != nil || targetCol == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "目标专栏不存在"})
+		return
+	}
+
+	post.ColumnID = uint(columnID)
+	if err := h.postService.Update(post); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "文章已迁移到" + targetCol.Name})
+}
+
+// BatchMigrate 批量迁移文章
+func (h *PostHandler) BatchMigrate(c *gin.Context) {
+	ids := c.PostForm("ids")
+	if ids == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请选择要迁移的文章"})
+		return
+	}
+
+	columnID, err := strconv.ParseUint(c.PostForm("column_id"), 10, 32)
+	if err != nil || columnID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请选择目标专栏"})
+		return
+	}
+
+	targetCol, err := h.columnService.GetByID(uint(columnID))
+	if err != nil || targetCol == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "目标专栏不存在"})
+		return
+	}
+
+	var idList []uint
+	for _, idStr := range strings.Split(ids, ",") {
+		id, err := strconv.ParseUint(idStr, 10, 32)
+		if err == nil {
+			idList = append(idList, uint(id))
+		}
+	}
+
+	if len(idList) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的文章ID"})
+		return
+	}
+
+	successCount := 0
+	for _, postID := range idList {
+		post, err := h.postService.GetByID(postID)
+		if err == nil && post != nil {
+			post.ColumnID = uint(columnID)
+			if h.postService.Update(post) == nil {
+				successCount++
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":  true,
+		"message": fmt.Sprintf("成功迁移 %d 篇文章到 %s", successCount, targetCol.Name),
+	})
+}
+
 // Delete 删除文章
 func (h *PostHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
@@ -276,7 +382,7 @@ func randomString(length int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
 	b := make([]rune, length)
 	for i := range b {
-		b[i] = rune(letters[i%len(letters)])
+		b[i] = rune(letters[rand.Intn(len(letters))])
 	}
 	return string(b)
 }

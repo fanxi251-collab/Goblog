@@ -55,3 +55,28 @@ func (r *VisitorRepository) GetLastCommentTime(visitorID uint) (int64, error) {
 	}
 	return comment.CreatedAt, nil
 }
+
+// CheckNicknameExists 检查昵称是否已存在
+func (r *VisitorRepository) CheckNicknameExists(nickname string) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.Visitor{}).Where("nickname = ?", nickname).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// CheckEmailExists 检查邮箱是否已存在
+func (r *VisitorRepository) CheckEmailExists(email string) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.Visitor{}).Where("email = ?", email).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// DeleteAll 删除所有访客（测试用）
+func (r *VisitorRepository) DeleteAll() error {
+	return r.db.Unscoped().Delete(&model.Visitor{}).Error
+}

@@ -460,7 +460,8 @@
         .comment-item:last-child { border-bottom: none; }
         .comment-header {
             display: flex;
-            justify-content: space-between;
+            align-items: center;       /* 垂直居中对齐 */
+            gap: 8px;                  /* 元素之间的固定间隔，不用再手动加 margin */
             margin-bottom: 8px;
         }
         .comment-author { font-weight: bold; color: #667eea; }
@@ -481,6 +482,43 @@
             background: #f8f9fa;
             border-radius: 8px;
         }
+        
+        /* 横向表单 */
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .form-row .form-group { flex: 1; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+        }
+        
+        /* 用户信息栏 */
+        .user-info { display: none; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 8px; }
+        .user-info.show { display: flex; }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;   /* 防止被挤压变形 */
+        }
+
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 8px;  /* 与昵称保持一点间距 */
+            flex-shrink: 0;
+        }
+        
+        /* 弹窗样式 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; }
+        
+        .error-msg { color: #dc3545; font-size: 14px; margin-top: 5px; display: none; }
+        .error-msg.show { display: block; }
 
         /* 右侧：文章目录 */
         .right-sidebar {
@@ -579,7 +617,7 @@
     <main class="main-content">
         <div class="article">
             <div class="article-content" id="articleContent">
-                {{safe .post.Content}}
+                {{.contentHTML}}
             </div>
 
             <!-- 点赞按钮 -->
@@ -592,16 +630,46 @@
                 </button>
             </div>
 
-            <!-- 评论区域 -->
+<!-- 评论区域 -->
             <div class="comments-section">
                 <h2>评论 <span id="commentCount">({{.post.CommentCount}})</span></h2>
-
+                
+                <!-- 评论表单（在评论列表之前） -->
+                <div class="comment-form">
+                    <h3>发表评论</h3>
+                    
+                    <!-- 已登录用户信息 -->
+                    <div id="userInfo" class="user-info" style="display: none;">
+                        <img id="userAvatar" class="avatar" src="" alt="avatar">
+                        <span>欢迎，</span><span id="userNickname" style="color: #667eea; font-weight: bold;"></span>
+                        <button class="btn btn-sm" onclick="showEditModal()">修改</button>
+                    </div>
+                    
+                    <!-- 未登录时显示输入框 -->
+                    <div id="guestFields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>昵称 *</label>
+                                <input type="text" id="commentNickname" placeholder="请输入昵称">
+                            </div>
+                            <div class="form-group">
+                                <label>邮箱 *</label>
+                                <input type="email" id="commentEmail" placeholder="用于接收回复通知">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <textarea id="commentContent" placeholder="写下你的评论..."></textarea>
+                    <button class="btn" onclick="submitComment()">提交评论</button>
+                </div>
+                
                 <!-- 评论列表 -->
                 <div class="comment-list" id="commentList">
                     {{if .comments}}
                         {{range .comments}}
                         <div class="comment-item" id="comment-{{.ID}}">
                             <div class="comment-header">
+                                <img class="avatar-sm" src="https://api.dicebear.com/7.x/bottts/svg?seed={{.Nickname}}" alt="avatar">
                                 <span class="comment-author">{{.Nickname}}</span>
                                 <span class="comment-date">{{formatTime .CreatedAt}}</span>
                             </div>
@@ -642,19 +710,6 @@
                         <p style="color: #999; text-align: center; padding: 20px;">暂无评论，快来抢沙发吧！</p>
                     {{end}}
                 </div>
-
-                <!-- 评论表单 -->
-                <div class="comment-form">
-                    <h3>发表评论</h3>
-                    <div id="commentLoginPrompt" class="comment-login-prompt" style="display: none;">
-                        <p>登录后即可发表评论</p>
-                        <button class="btn" onclick="showVisitorModal()">立即登录</button>
-                    </div>
-                    <div id="commentFormContent">
-                        <textarea id="commentContent" placeholder="写下你的评论..."></textarea>
-                        <button class="btn" onclick="submitComment()">提交评论</button>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
@@ -673,6 +728,27 @@
             </ul>
         </div>
     </aside>
+</div>
+
+<!-- 修改信息弹窗 -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>修改信息</h3>
+        <form id="editForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>昵称 *</label>
+                    <input type="text" id="editNickname" required>
+                </div>
+                <div class="form-group">
+                    <label>邮箱（选填）</label>
+                    <input type="email" id="editEmail">
+                </div>
+            </div>
+            <div id="editError" class="error-msg"></div>
+            <button type="submit" class="btn" style="width: 100%;">保存</button>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -809,17 +885,29 @@
         }
         return token || '';
     }
-
-    // 检查登录状态
+    
+    var isLogin = false;
+    var currentToken = '';
+    
+// 检查登录状态（不隐藏输入框，保留用户填写的内容）
     function checkLogin() {
-        var token = getVisitorToken();
-        if (token) {
-            document.getElementById('commentLoginPrompt').style.display = 'none';
-            document.getElementById('commentFormContent').style.display = 'block';
-        } else {
-            document.getElementById('commentLoginPrompt').style.display = 'block';
-            document.getElementById('commentFormContent').style.display = 'none';
-        }
+        fetch('/api/visitor/check')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.is_login && data.visitor) {
+                isLogin = true;
+                currentToken = localStorage.getItem('visitor_token');
+                
+                // 显示头像
+                document.getElementById('userInfo').classList.add('show');
+                document.getElementById('userAvatar').src = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + data.visitor.nickname;
+                document.getElementById('userNickname').textContent = data.visitor.nickname;
+                
+                // 填充表单，但不隐藏
+                document.getElementById('commentNickname').value = data.visitor.nickname;
+                document.getElementById('commentEmail').value = data.visitor.email || '';
+            }
+        });
     }
 
     // 提交评论
@@ -829,14 +917,67 @@
             alert('请输入评论内容');
             return;
         }
-
+        
         var postId = document.querySelector('#likeBtn').dataset.postId;
-
+        
+        // 已登录：直接提交评论
+        if (isLogin) {
+            submitCommentApi(postId, content);
+            return;
+        }
+        
+        // 未登录：直接注册（后端检查唯一性）
+        var nickname = document.getElementById('commentNickname').value.trim();
+        var email = document.getElementById('commentEmail').value.trim();
+        
+        if (!nickname) {
+            alert('请输入昵称');
+            return;
+        }
+        if (!email) {
+            alert('请输入邮箱');
+            return;
+        }
+        
+        // 直接注册，后端检查唯一性
+        fetch('/api/visitor/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'nickname=' + encodeURIComponent(nickname) + '&email=' + encodeURIComponent(email)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.token) {
+                // 注册成功，保存登录状态
+                localStorage.setItem('visitor_token', data.token);
+                currentToken = data.token;
+                isLogin = true;
+                
+                // 显示头像
+                document.getElementById('userInfo').classList.add('show');
+                document.getElementById('userAvatar').src = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + nickname;
+                document.getElementById('userNickname').textContent = nickname;
+                
+                // 提交评论
+                submitCommentApi(postId, content);
+            } else {
+                // 注册失败（昵称/邮箱已存在等），保留输入框内容让用户修改
+                alert(data.error || '注册失败，请重试');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('注册失败，请重试');
+        });
+    }
+    
+    // 提交评论API
+    function submitCommentApi(postId, content) {
         fetch('/api/comment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Visitor-Token': getVisitorToken()
+                'X-Visitor-Token': currentToken
             },
             body: JSON.stringify({
                 post_id: parseInt(postId),
@@ -857,36 +998,56 @@
             alert('网络错误');
         });
     }
-
-    // 显示访客登录弹窗
-    function showVisitorModal() {
-        var nickname = prompt('请输入昵称:');
-        if (!nickname) return;
+    
+    // 显示修改信息弹窗
+    function showEditModal() {
+        document.getElementById('editNickname').value = document.getElementById('commentNickname').value;
+        document.getElementById('editEmail').value = document.getElementById('commentEmail').value;
+        document.getElementById('editModal').classList.add('show');
+    }
+    
+    // 修改信息
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var nickname = document.getElementById('editNickname').value.trim();
+        var email = document.getElementById('editEmail').value.trim();
+        var errorEl = document.getElementById('editError');
         
-        var email = prompt('请输入邮箱 (可选):');
+        if (!nickname) {
+            errorEl.textContent = '昵称不能为空';
+            errorEl.classList.add('show');
+            return;
+        }
         
-        fetch('/api/visitor/register', {
+        fetch('/api/visitor/update', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Visitor-Token': currentToken
+            },
             body: JSON.stringify({ nickname: nickname, email: email })
         })
         .then(function(res) { return res.json(); })
         .then(function(data) {
-            if (data.token) {
-                localStorage.setItem('visitor_token', data.token);
-                document.cookie = 'visitor_token=' + data.token + '; path=/; max-age=' + (30 * 24 * 60 * 60);
-                checkLogin();
-                initLike();
+            if (data.success) {
+                document.getElementById('userNickname').textContent = nickname;
+                document.getElementById('commentNickname').value = nickname;
+                document.getElementById('commentEmail').value = email;
+                document.getElementById('userAvatar').src = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + nickname;
+                document.getElementById('editModal').classList.remove('show');
+                alert('信息已更新');
             } else {
-                alert(data.error || '登录失败');
+                errorEl.textContent = data.error || '更新失败';
+                errorEl.classList.add('show');
             }
         });
-    }
+    });
+        
 
     // 显示回复表单
     function showReplyForm(commentId) {
         if (!isLogin) {
-            showVisitorModal();
+            document.getElementById('registerModal').classList.add('show');
             return;
         }
         document.getElementById('reply-form-' + commentId).classList.add('show');

@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"html/template"
+
+	"github.com/gin-gonic/gin"
 )
 
 // ColumnHandler 专栏处理器
@@ -211,10 +212,6 @@ func (h *ColumnHandler) Post(c *gin.Context) {
 		return
 	}
 
-	// 渲染Markdown
-	content := service.RenderMarkdown(post.Content)
-	post.Content = content
-
 	// 获取专栏信息（只有 ColumnID > 0 时才获取）
 	var column *model.Column
 	if post.ColumnID > 0 {
@@ -241,14 +238,10 @@ func (h *ColumnHandler) Post(c *gin.Context) {
 		}
 	}
 
-	// 渲染 Markdown
+// 渲染 Markdown
 	contentHTML := ""
 	if post.Content != "" {
 		contentHTML = service.RenderMarkdown(post.Content)
-		if contentHTML == post.Content || contentHTML == "" {
-			// 恢复失败，显示原始文本
-			contentHTML = "<pre style='white-space:pre-wrap;font-family:inherit;font-size:inherit;line-height:1.8;'>" + post.Content + "</pre>"
-		}
 	}
 
 	// 获取文章评论（只显示已审核的）

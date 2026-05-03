@@ -26,13 +26,7 @@
 </style>
 <body>
     <script>var adminPath = '{{.adminPath}}';</script>
-    <div class="header">
-        <h1>开发日志</h1>
-        <nav>
-            <a href="{{.adminPath}}/">仪表盘</a>
-            <a href="{{.adminPath}}/posts">文章</a>
-        </nav>
-    </div>
+    {{template "header" .}}
     <div class="container">
         <div class="card">
             <a href="{{.adminPath}}/devlogs/new" class="btn">新建日志</a>
@@ -48,6 +42,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {{$adminPath := .adminPath}}
                     {{range .devlogs}}
                     <tr>
                         <td>{{.ID}}</td>
@@ -62,7 +57,7 @@
                             {{end}}
                         </td>
                         <td>
-                            <a href="{{.adminPath}}/devlogs/{{.ID}}" class="btn">编辑</a>
+                            <a href="{{$adminPath}}/devlogs/{{.ID}}" class="btn">编辑</a>
                             {{if .IsPublished}}
                                 <button onclick="unpublishDevlog({{.ID}})" class="btn btn-warning">下架</button>
                             {{else}}

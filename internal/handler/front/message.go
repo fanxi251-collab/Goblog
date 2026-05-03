@@ -70,6 +70,22 @@ func (h *MessageHandler) Register(c *gin.Context) {
 		return
 	}
 
+	// 检查昵称是否已存在
+	nicknameExists, _ := h.visitorService.CheckNicknameExists(nickname)
+	if nicknameExists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "昵称已存在，请更换"})
+		return
+	}
+
+	// 检查邮箱是否已存在（包含管理员邮箱）
+	if email != "" {
+		emailExists, _ := h.visitorService.CheckEmailExists(email)
+		if emailExists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "邮箱已存在，请更换"})
+			return
+		}
+	}
+
 	ip := c.ClientIP()
 
 	visitor, err := h.visitorService.Register(nickname, email, ip)
@@ -112,6 +128,44 @@ func (h *MessageHandler) Check(c *gin.Context) {
 		"is_login": true,
 		"visitor":  visitor,
 	})
+}
+
+// CheckExist 检查昵称/邮箱是否已存在（预检查接口）
+func (h *MessageHandler) CheckExist(c *gin.Context) {
+	nickname := c.Query("nickname")
+	email := c.Query("email")
+
+	result := gin.H{
+		"nickname_exists": false,
+		"email_exists":    false,
+	}
+
+	// 检查昵称
+	if nickname != "" {
+		exists, err := h.visitorService.CheckNicknameExists(nickname)
+		if err == nil {
+			result["nickname_exists"] = exists
+		}
+	}
+
+	// 检查邮箱
+	if email != "" {
+		exists, err := h.visitorService.CheckEmailExists(email)
+		if err == nil {
+			result["email_exists"] = exists
+		}
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// DeleteAllVisitors 删除所有访客（测试用）
+func (h *MessageHandler) DeleteAllVisitors(c *gin.Context) {
+	if err := h.visitorService.DeleteAllVisitors(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "删除失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
 // UpdateInfo 更新访客信息
@@ -159,15 +213,11 @@ func (h *MessageHandler) SubmitPostComment(c *gin.Context) {
 		return
 	}
 
-	// 验证文章存在
-	post, err := h.postService.GetBySlug("")
+	// 验证文章存在（直接用 ID 查询）
+	post, err := h.postService.GetByID(req.PostID)
 	if err != nil || post == nil {
-		// 尝试用ID获取
-		post, err = h.postService.GetByID(req.PostID)
-		if err != nil || post == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "文章不存在"})
-			return
-		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": "文章不存在"})
+		return
 	}
 
 	token := c.GetHeader("X-Visitor-Token")

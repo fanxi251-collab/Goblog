@@ -75,19 +75,15 @@
         .cover-preview:hover { border-color: #667eea; }
         .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
         .cover-placeholder { color: #999; font-size: 14px; }
+    #vditor {
+            min-height: 400px;
+            border-radius: 0 0 8px 8px;
+        }
     </style>
 </head>
 <body>
     <script>var adminPath = '{{.adminPath}}';</script>
-    <div class="header">
-        <h1>编辑文章</h1>
-        <nav>
-            <a href="{{.adminPath}}/">仪表盘</a>
-            <a href="{{.adminPath}}/posts">文章管理</a>
-            <a href="{{.adminPath}}/drafts">草稿箱</a>
-            <a href="{{.adminPath}}/posts/new">写文章</a>
-        </nav>
-    </div>
+    {{template "header" .}}
     <div class="container">
         <div class="card">
             <form id="postForm">
@@ -127,27 +123,8 @@
                 </div>
                 <div class="form-group">
                     <label>内容（Markdown）</label>
-                    <!-- 自定义工具栏 -->
-                    <div class="editor-toolbar">
-                        <button type="button" onclick="insertFormat('# ', '')">H1</button>
-                        <button type="button" onclick="insertFormat('## ', '')">H2</button>
-                        <button type="button" onclick="insertFormat('### ', '')">H3</button>
-                        <span class="separator"></span>
-                        <button type="button" onclick="insertFormat('**', '**)">粗体</button>
-                        <button type="button" onclick="insertFormat('*', '*)">斜体</button>
-                        <button type="button" onclick="insertFormat('~~', '~~')">删除线</button>
-                        <span class="separator"></span>
-                        <button type="button" onclick="insertFormat('- ', '')">无序列表</button>
-                        <button type="button" onclick="insertFormat('1. ', '')">有序列表</button>
-                        <span class="separator"></span>
-                        <button type="button" onclick="insertFormat('`', '`')">行内代码</button>
-                        <button type="button" onclick="insertFormat('\n```\n', '\n```\n')">代码块</button>
-                        <button type="button" onclick="insertFormat('\n> ', '')">引用</button>
-                        <button type="button" onclick="insertFormat('[', '](url)')">链接</button>
-                        <button type="button" onclick="document.getElementById('imageUpload').click()">图片</button>
-                        <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="uploadImage(this)">
-                    </div>
-                    <textarea name="content" id="content" style="width: 100%; min-height: 400px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; font-family: monospace; font-size: 14px; line-height: 1.6;">{{.post.Content}}</textarea>
+                    <input type="hidden" name="content" id="content" value="{{.post.Content}}">
+                    <div id="vditor"></div>
                 </div>
                 <div id="message"></div>
                 <div class="btn-group">
@@ -159,92 +136,151 @@
         </div>
     </div>
 
-    <script>
-        // 插入格式到文本框
-        function insertFormat(prefix, suffix) {
-            const textarea = document.getElementById('content');
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const text = textarea.value;
-            const selected = text.substring(start, end);
-            
-            const before = text.substring(0, start);
-            const after = text.substring(end);
-            
-            textarea.value = before + prefix + selected + suffix + after;
-            textarea.focus();
-            
-            const newPos = start + prefix.length + selected.length + suffix.length;
-            textarea.setSelectionRange(newPos, newPos);
-        }
-
-        // 上传图片
-        function uploadImage(input) {
-            if (!input.files || !input.files[0]) return;
-            
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            fetch(adminPath + '/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success || data.success === 1) {
-                    // 插入 Markdown 图片链接到文本框
-                    insertFormat(data.data.url, '');
-                    // 清空 input 以便重复选择同一文件
-                    input.value = '';
-                } else {
-                    alert('上传失败: ' + (data.error || '未知错误'));
-                }
-            })
-            .catch(err => {
-                alert('请求失败');
-            });
-        }
-
-        // 上传封面
+<script>
+        // 封面上传函数
         function uploadCover(input) {
-            const postID = document.querySelector('input[name="id"]').value;
-            if (!postID) {
-                alert('请先保存文章后再上传封面');
-                return;
-            }
+            var file = input.files[0];
+            if (!file) return;
             
-            if (!input.files || !input.files[0]) return;
+            // 获取文章ID（新建文章时为0）
+            var postId = document.querySelector('input[name="id"]').value || 0;
             
-            const file = input.files[0];
-            const formData = new FormData();
+            var formData = new FormData();
             formData.append('file', file);
-            formData.append('post_id', postID);
+            formData.append('post_id', postId);
+            
+            console.log('[COVER] Uploading for post_id:', postId);
             
             fetch(adminPath + '/upload/cover', {
                 method: 'POST',
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success || data.success === 1) {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                console.log('[COVER] Response:', data);
+                
+                if (data.code === 0 && data.data) {
                     // 更新隐藏字段
                     document.getElementById('coverImage').value = data.data.path;
-                    // 更新预览
-                    document.getElementById('coverPreview').innerHTML = '<img src="' + data.data.url + '" alt="封面预览">';
-                    // 清空 input
-                    input.value = '';
+                    // 更新预览图
+                    var preview = document.getElementById('coverPreview');
+                    preview.innerHTML = '<img src="' + data.data.url + '" alt="封面预览">';
+                    console.log('[COVER] Upload done!');
+                    alert('封面上传成功！');
                 } else {
-                    alert('上传失败: ' + (data.error || '未知错误'));
+                    console.error('[COVER] Failed:', data);
+                    alert('封面上传失败：' + (data.msg || data.error || '未知错误'));
                 }
             })
-            .catch(err => {
-                alert('请求失败');
+            .catch(function(err) {
+                console.error('[COVER] Error:', err);
+                alert('封面上传失败：网络错误');
             });
         }
+        
+        // 自定义上传函数（正文图片）
+        function uploadImage() {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                
+                var formData = new FormData();
+                formData.append('file', file);
+                
+                console.log('[CUSTOM UPLOAD] Starting...');
+                
+                fetch(adminPath + '/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    console.log('[CUSTOM UPLOAD] Response:', data);
+                    
+                    if (data.code === 0 && data.data && data.data.url) {
+                        var md = '![' + data.data.name + '](' + data.data.url + ')';
+                        console.log('[CUSTOM UPLOAD] Inserting:', md);
+                        window.vditorInstance.insertValue(md);
+                        console.log('[CUSTOM UPLOAD] Done!');
+                        alert('上传成功！');
+                    } else {
+                        console.error('[CUSTOM UPLOAD] Failed:', data);
+                        alert('上传失败：' + (data.msg || data.error || '未知错误'));
+                    }
+                })
+                .catch(function(err) {
+                    console.error('[CUSTOM UPLOAD] Error:', err);
+                    alert('上传失败：网络错误');
+                });
+            };
+            input.click();
+        }
+        
+        // 使用全局变量存储 Vditor 实例
+        window.vditorInstance = null;
+        
+        // 先销毁已存在的实例（避免缓存残留）
+        if (window.vditor && window.vditor.destroy) {
+            window.vditor.destroy();
+        }
+        
+        // 初始化 Vditor（移除内置upload，改用自定义按钮）
+        window.vditorInstance = new Vditor('vditor', {
+            height: 500,
+            mode: 'ir',
+            placeholder: '请输入文章内容...',
+            value: '',
+            toolbar: [
+                'headings',
+                'bold',
+                'italic',
+                'strike',
+                '|',
+                'line',
+                'quote',
+                'list',
+                'ordered-list',
+                '|',
+                'code',
+                'inline-code',
+                'link',
+                '|',
+                {
+                    name: 'image',
+                    tip: '上传图片',
+                    icon: '<svg viewBox="64 64 896 896"><path d="M896 448H448c-17.7 0-32 14.3-32 32v224c0 17.7 14.3 32 32 32h448c17.7 0 32-14.3 32-32V480c0-17.7-14.3-32-32-32zm-448 288V480h448v224H448zm96-160c-17.7 0-32 14.3-32 32v96c0 17.7 14.3 32 32 32h128c17.7 0 32-14.3 32-32V640c0-17.7-14.3-32-32-32H544zm0-64h128c17.7 0 32 14.3 32 32v96c0 17.7-14.3 32-32 32H544c-17.7 0-32-14.3-32-32V640c0-17.7 14.3-32 32-32z"></path></svg>',
+                    click: function() {
+                        uploadImage();
+                    }
+                },
+                '|',
+                'undo',
+                'redo'
+],
+});
+        
+        // 加载初始内容到 Vditor（先清空再设置，避免残留）
+        var initialContent = document.querySelector('input[name="content"]');
+        if (initialContent && initialContent.value) {
+            window.vditorInstance.empty();
+            window.vditorInstance.setValue(initialContent.value);
+        }
+        
+        console.log('Vditor initialized');
 
+        // 提交文章
         function submitPost(action) {
+            var vd = window.vditorInstance;
+            if (!vd) {
+                alert('编辑器未初始化');
+                return;
+            }
+            
             const form = document.getElementById('postForm');
+            document.getElementById('content').value = vd.getValue();
             const formData = new FormData(form);
             formData.append('action', action);
             
